@@ -1,0 +1,42 @@
+.calendar {
+	width: 100%;
+	height: 100%;
+
+	display: flex;
+	flex-direction: column;
+}
+
+.calendar tbody {
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+}
+
+.week {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+	flex-grow: 1;
+}
+
+.week th {
+	width: 14.285%;
+}
+
+.day {
+	width: 14.285%;
+	border: solid grey 1px;
+}
+
+.dayHeader {
+	height: 20%;
+}
+
+.dayLabel {
+	float: left;
+	margin: 3px;
+}
+
+.tagList {
+	float: right;
+}
