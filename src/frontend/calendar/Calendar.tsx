@@ -5,9 +5,13 @@ import './Calendar.css';
 
 export default function Calendar()
 {
+	const today = DateTime.now();
 	return (
 		<table className="calendar">
 			<thead>
+				<tr className="week">
+					<h1>{today.monthLong}</h1>
+				</tr>
 				<tr className="week">
 					<th>Sunday</th>
 					<th>Monday</th>
