@@ -1,0 +1,17 @@
+{
+	"include": [
+		"src/backend/*.ts"
+	],
+	"compilerOptions": {
+		"outDir": "serverBuild",
+		"target": "es2020",
+		"allowJs": true,
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"strict": true,
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"sourceMap": true
+	},
+}

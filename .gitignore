@@ -114,6 +114,7 @@ dist
 
 # production
 /build
+/serverBuild
 
 # misc
 .DS_Store

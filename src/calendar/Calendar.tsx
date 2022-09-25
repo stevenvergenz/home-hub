@@ -7,25 +7,25 @@ export default function Calendar()
 {
 	const today = DateTime.now();
 	return (
-		<table className="calendar">
-			<thead>
-				<tr className="week">
-					<h1>{today.monthLong}</h1>
-				</tr>
-				<tr className="week">
-					<th>Sunday</th>
-					<th>Monday</th>
-					<th>Tuesday</th>
-					<th>Wednesday</th>
-					<th>Thursday</th>
-					<th>Friday</th>
-					<th>Saturday</th>
-				</tr>
-			</thead>
-			<tbody>
-				{generateDayGrid()}
-			</tbody>
-		</table>
+		<div className="calendar">
+			<h1>{today.monthLong}</h1>
+			<table>
+				<thead>
+					<tr className="week">
+						<th>Sunday</th>
+						<th>Monday</th>
+						<th>Tuesday</th>
+						<th>Wednesday</th>
+						<th>Thursday</th>
+						<th>Friday</th>
+						<th>Saturday</th>
+					</tr>
+				</thead>
+				<tbody>
+					{generateDayGrid()}
+				</tbody>
+			</table>
+		</div>
 	);
 }
 
@@ -46,7 +46,7 @@ function generateDayGrid(): JSX.Element[]
 		}
 
 		weeks.push(
-			<tr className="week">
+			<tr className="week" key={"week-"+i}>
 				{days}
 			</tr>);
 	}
