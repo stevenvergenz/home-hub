@@ -18,15 +18,60 @@ export type Event =
 	endTime: DateTime;
 };
 
-export async function getEventsOnDay(day: DateTime): Promise<Event[]>
+let cachedEvents: Event[];
+let getEventsPromise: Promise<Event[]> | null = null;
+
+function getEvents(): Promise<Event[]>
 {
-	const res = await fetch(`/api/calendar/getEventsOnDay?day=${encodeURIComponent(day.toISO())}`);
+	if (getEventsPromise !== null)
+	{
+		return getEventsPromise;
+	}
+	else
+	{
+		getEventsPromise = getEventsInternal();
+		getEventsPromise.then(() => { getEventsPromise = null; })
+	}
+	return getEventsPromise;
+}
+
+export async function getEventsInternal(): Promise<Event[]>
+{
+	const res = await fetch("/api/calendar/getEvents");
 	if (res.ok)
 	{
 		const data = await res.json();
-		return data as Event[];
+
+		for (const e of data)
+		{
+			e.startTime = DateTime.fromISO(e.startTime);
+			e.endTime = DateTime.fromISO(e.endTime);
+		}
+
+		cachedEvents = data as Event[];
+		return cachedEvents;
 	}
 	else {
-		throw new Error(`Failed to fetch events for ${day}: ${res.status}`);
+		throw new Error(`Failed to fetch events: ${res.status}`);
 	}
+}
+
+export async function getEventsOnDay(day: DateTime): Promise<Event[]>
+{
+	if (!cachedEvents)
+	{
+		await getEvents();
+	}
+	
+	const nextDay = day.plus({days: 1});
+	const selectedEvents: Event[] = [];
+	for (const e of cachedEvents)
+	{
+		if (e.startTime >= day && e.startTime < nextDay)
+		{
+			selectedEvents.push(e);
+		}
+	}
+
+	return selectedEvents;
 }
