@@ -42,7 +42,7 @@ function generateDayGrid(): JSX.Element[]
 		{
 			const gridIndex = 7 * i + j;
 			const date = firstDay.plus({ days: gridIndex - (firstDay.weekday % 7) })
-			days.push(<Day gridIndex={7 * i + j} date={date} isOverflow={date.month != today.month} />);
+			days.push(<Day key={"day-"+(7*i+j)} gridIndex={7 * i + j} date={date} isOverflow={date.month != today.month} />);
 		}
 
 		weeks.push(
