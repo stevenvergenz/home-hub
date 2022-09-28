@@ -6,7 +6,12 @@ export default function App()
 {
 	return (
 		<div className="App">
-			<Calendar />
+			<div id="leftPane">
+				
+			</div>
+			<div id="rightPane">
+				<Calendar />
+			</div>
 		</div>
 	);
 }

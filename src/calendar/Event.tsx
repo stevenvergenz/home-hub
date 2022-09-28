@@ -11,8 +11,8 @@ type EventProps = {
 export default function Event(props: EventProps)
 {
 	return (
-		<div className="event" style={{color: props.def.calendar.fgColor, backgroundColor: props.def.calendar.bgColor}}>
+		<p className="event" style={{color: props.def.calendar.fgColor, backgroundColor: props.def.calendar.bgColor}}>
 			{props.def.startTime.toLocaleString(DateTime.TIME_SIMPLE)} - {props.def.name}
-		</div>
+		</p>
 	);
 }

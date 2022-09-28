@@ -1,5 +1,6 @@
 .calendar > h1 {
 	text-align: center;
+	margin: 5px 0;
 }
 
 .calendar, .calendar table {
@@ -52,4 +53,13 @@
 
 .tagList {
 	float: right;
+}
+
+.event {
+	font-size: .8em;
+	margin: 2px 0;
+	border-radius: 3px;
+	padding: 2px;
+	padding-left: 10px;
+	text-indent: -10px;
 }
