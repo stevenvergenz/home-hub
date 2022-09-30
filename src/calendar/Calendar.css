@@ -43,16 +43,9 @@
 	background-color: lightgrey;
 }
 
-/*.dayHeader {
-	height: 20%;
-}*/
-
-.dayLabel {
-	float: left;
-}
-
-.tagList {
-	float: right;
+.dayHeader {
+	display: flex;
+	justify-content: space-between;
 }
 
 .event {
@@ -60,6 +53,13 @@
 	margin: 2px 0;
 	border-radius: 3px;
 	padding: 2px;
-	padding-left: 10px;
+	padding-left: 12px;
 	text-indent: -10px;
+}
+
+.tagList .event {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	margin: 0;
 }

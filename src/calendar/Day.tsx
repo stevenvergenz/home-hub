@@ -12,12 +12,32 @@ type DayProps =
 	isOverflow: boolean;
 };
 
+type DayState =
+{
+	specials: JSX.Element[];
+	events: JSX.Element[];
+};
+
 export default function Day(props: DayProps)
 {
-	let [events, setEvents] = React.useState([] as JSX.Element[]);
+	let [events, setEvents] = React.useState({events: [], specials: []} as DayState);
 	React.useEffect(() => {
-		getEventsOnDay(props.date).then(es => {
-			setEvents(es.map(e => <Event key={e.id} def={e} />));
+		getEventsOnDay(props.date)
+		.then(es =>
+		{
+			const state: DayState = {events: [], specials: []};
+			for (const e of es)
+			{
+				if (/holiday|birthday/i.test(e.calendar.name))
+				{
+					state.specials.push(<Event key={e.id} def={e} />);
+				}
+				else
+				{
+					state.events.push(<Event key={e.id} def={e} />);
+				}
+			}
+			setEvents(state);
 		});
 	}, []);
 
@@ -25,10 +45,10 @@ export default function Day(props: DayProps)
 		<td className={`day ${props.isOverflow ? "overflow" : ""}`}
 			title={props.date.toLocaleString()}>
 			<div className="dayHeader">
-				<span className="dayLabel">{props.date.day}</span>
-				<span className="tagList"></span>
+				<div className="dayLabel">{props.date.day}</div>
+				<div className="tagList">{events.specials}</div>
 			</div>
-			{events}
+			{events.events}
 		</td>
 	);
 }
