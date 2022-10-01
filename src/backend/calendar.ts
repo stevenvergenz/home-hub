@@ -57,15 +57,17 @@ function getEvents(): Promise<Event[]>
 async function getEventsInternal(): Promise<Event[]>
 {
 	const today = DateTime.now();
-	const firstDayOfMonth = DateTime.fromObject({ year: today.year, month: today.month, day: 1});
-	const startDate = firstDayOfMonth.minus({ days: firstDayOfMonth.weekday % 7 });
-	const endDate = startDate.plus({ days: 35 });
+	const firstDay = DateTime.fromObject({ year: today.year, month: today.month, day: 1});
+	const lastDay = firstDay.plus({ days: firstDay.daysInMonth });
+	const firstVisibleDay = firstDay.minus({ days: firstDay.weekday % 7 });
+	const lastVisibleDay = lastDay.plus({ days: 6 - (lastDay.weekday % 7) });
+	const lastVisiblePlusOne = lastVisibleDay.plus({ days: 1 });
 
 	const data: CacheData = {
 		calendars: {},
 		events: [],
-		rangeStart: startDate,
-		rangeEnd: endDate,
+		rangeStart: firstVisibleDay,
+		rangeEnd: lastVisiblePlusOne,
 		lastRefresh: today
 	};
 
@@ -99,8 +101,8 @@ async function getEventsInternal(): Promise<Event[]>
 
 		const eventsRes = await Api.events.list({
 			calendarId: calendar.id as string,
-			timeMin: startDate.toISO(),
-			timeMax: endDate.toISO(),
+			timeMin: firstVisibleDay.toISO(),
+			timeMax: lastVisiblePlusOne.toISO(),
 			singleEvents: true,
 			orderBy: "startTime"
 		});
@@ -123,6 +125,7 @@ async function getEventsInternal(): Promise<Event[]>
 		}
 	}
 
+	data.events = data.events.sort((a, b) => a.startTime.toSeconds() - b.startTime.toSeconds());
 	cachedEvents = data;
 	console.log("Cached events:", cachedEvents);
 	return cachedEvents.events;
