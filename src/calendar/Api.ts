@@ -21,7 +21,7 @@ export type Event =
 let cachedEvents: Event[];
 let getEventsPromise: Promise<Event[]> | null = null;
 
-function getEvents(): Promise<Event[]>
+export function getEvents(): Promise<Event[]>
 {
 	if (getEventsPromise !== null)
 	{
@@ -54,24 +54,4 @@ async function getEventsInternal(): Promise<Event[]>
 	else {
 		throw new Error(`Failed to fetch events: ${res.status}`);
 	}
-}
-
-export async function getEventsOnDay(day: DateTime): Promise<Event[]>
-{
-	if (!cachedEvents)
-	{
-		await getEvents();
-	}
-	
-	const nextDay = day.plus({days: 1});
-	const selectedEvents: Event[] = [];
-	for (const e of cachedEvents)
-	{
-		if (e.endTime > day && e.startTime < nextDay)
-		{
-			selectedEvents.push(e);
-		}
-	}
-
-	return selectedEvents;
 }

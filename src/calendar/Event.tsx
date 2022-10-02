@@ -6,17 +6,17 @@ import './Calendar.css';
 
 type EventProps = {
 	def: ApiEvent;
+	date: DateTime;
 };
 
 export default function Event(props: EventProps)
 {
-	const fullDay = props.def.startTime.plus({days: 1}).equals(props.def.endTime);
+	const fullDay = props.def.startTime <= props.date && props.def.endTime >= props.date.plus({ days: 1 });
 	const timeRange = props.def.startTime.toLocaleString(DateTime.TIME_SIMPLE);
-		// + " - "
-		// + props.def.endTime.toLocaleString(DateTime.TIME_SIMPLE);
+	const title = props.def.name ?? "Busy";
 	return (
 		<p className="event" style={{color: props.def.calendar.fgColor, backgroundColor: props.def.calendar.bgColor}}>
-			{ fullDay ? props.def.name : `${timeRange} - ${props.def.name ?? "Busy"}` }
+			{ fullDay ? title : `${timeRange} - ${title}` }
 		</p>
 	);
 }

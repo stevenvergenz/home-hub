@@ -1,10 +1,21 @@
-import { DateTime } from 'luxon';
+import { DateTime, Duration } from 'luxon';
+import { useEffect, useState } from 'react';
 
 import Day from './Day';
+import { Event, getEvents } from './Api';
 import './Calendar.css';
 
 export default function Calendar()
 {
+	const [events, setEvents] = useState([] as Event[]);
+
+	useEffect(() => {
+		getEvents().then(es => setEvents(es));
+		setInterval(
+			async () => setEvents(await getEvents()),
+			Duration.fromObject({hours: 1}).toMillis());
+	}, []);
+
 	const today = DateTime.now();
 	return (
 		<div className="calendar">
@@ -22,14 +33,14 @@ export default function Calendar()
 					</tr>
 				</thead>
 				<tbody>
-					{generateDayGrid()}
+					{generateDayGrid(events)}
 				</tbody>
 			</table>
 		</div>
 	);
 }
 
-function generateDayGrid(): JSX.Element[]
+function generateDayGrid(events: Event[]): JSX.Element[]
 {
 	const today = DateTime.now();
 	const firstDay = DateTime.fromObject({ year: today.year, month: today.month, day: 1});
@@ -43,7 +54,11 @@ function generateDayGrid(): JSX.Element[]
 	while (date <= lastVisibleDay)
 	{
 		days.push(
-			<Day key={"day-"+gridIndex} gridIndex={gridIndex} date={date} isOverflow={date.month != today.month} />);
+			<Day key={"day-"+gridIndex}
+				gridIndex={gridIndex}
+				date={date}
+				events={events}
+				isOverflow={date.month !== today.month} />);
 
 		if (days.length === 7)
 		{
