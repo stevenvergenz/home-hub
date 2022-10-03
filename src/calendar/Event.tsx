@@ -1,5 +1,5 @@
 import React from 'react';
-import { DateTime, Duration } from 'luxon';
+import { DateTime } from 'luxon';
 
 import { Event as ApiEvent } from './Api';
 import './Calendar.css';

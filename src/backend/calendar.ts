@@ -95,21 +95,29 @@ async function getEvents(): Promise<void>
 			timeMin: firstVisibleDay.toISO(),
 			timeMax: lastVisibleDay.toISO(),
 			singleEvents: true,
+			showDeleted: true,
 			orderBy: "startTime",
-			//updatedMin: cachedEvents?.lastRefresh.toISO()
+			updatedMin: cachedEvents?.lastRefresh.toISO(),
 		});
 
 		for (const event of eventsRes.data.items ?? [])
 		{
-			data.events[event.id as string] = {
-				calendarId: calendarId,
-				calendar: data.calendars[calendarId],
-				id: event.id as string,
-				name: event.summary as string,
-				startTime: parseDate(event.start),
-				endTime: parseDate(event.end),
-				lastUpdated: DateTime.fromISO(event.updated as string)
-			};
+			if (event.status !== 'cancelled')
+			{
+				data.events[event.id as string] = {
+					calendarId: calendarId,
+					calendar: data.calendars[calendarId],
+					id: event.id as string,
+					name: event.summary as string,
+					startTime: parseDate(event.start),
+					endTime: parseDate(event.end),
+					lastUpdated: DateTime.fromISO(event.updated as string)
+				};
+			}
+			else if (data.events[event.id as string])
+			{
+				delete data.events[event.id as string];
+			}
 		}
 	}
 
@@ -140,8 +148,9 @@ function parseDate(dt: calendar_v3.Schema$EventDateTime | undefined): DateTime
 
 export async function getEventsHandler(req: IncomingMessage, res: ServerResponse)
 {
-	const events = Object.values(cachedEvents?.events)
-		.sort((a, b) => a.startTime.toSeconds() - b.startTime.toSeconds());
+	const events = cachedEvents ? 
+		Object.values(cachedEvents.events).sort((a, b) => a.startTime.toSeconds() - b.startTime.toSeconds()) :
+		[];
 	res.writeHead(200, {'Content-Type': 'application/json'});
 	res.write(JSON.stringify(events));
 	res.end();
