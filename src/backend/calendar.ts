@@ -66,15 +66,17 @@ async function getEvents(): Promise<void>
 
 	if (initGcal && !cachedEvents)
 	{
-		for (let i = 0; i < config.calendars.length; i++)
+		for (const calendarId in config.calendars)
 		{
-			const res = await Api.calendarList.insert({ requestBody: 
-				{ id: config.calendars[i], colorId: (4 + 5 * i).toString(), selected: true }});
-			console.log(res.status, res.data);
+			const res = await Api.calendarList.insert({ requestBody: {
+				id: calendarId,
+				colorId: config.calendars[calendarId].colorId?.toString(),
+				backgroundColor: config.calendars[calendarId].color,
+				selected: true }});
 		}
 	}
 
-	if (Object.keys(data.calendars).length !== config.calendars.length)
+	if (Object.keys(data.calendars).length !== Object.keys(config.calendars).length)
 	{
 		const calendarsResponse = await Api.calendarList.list();
 		for (const calendar of calendarsResponse.data.items ?? [])
