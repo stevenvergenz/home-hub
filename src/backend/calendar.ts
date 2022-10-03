@@ -45,7 +45,7 @@ G.options({ auth: new G.auth.GoogleAuth({ scopes: [
 
 let cachedEvents: CacheData;
 
-getEvents();
+const firstLoad = getEvents();
 setInterval(
 	getEvents,
 	Duration.fromObject({ minutes: parseInt(process.env.REFRESH_MINUTES ?? '60') }).toMillis());
@@ -150,10 +150,11 @@ function parseDate(dt: calendar_v3.Schema$EventDateTime | undefined): DateTime
 
 export async function getEventsHandler(req: IncomingMessage, res: ServerResponse)
 {
-	const events = cachedEvents ? 
-		Object.values(cachedEvents.events).sort((a, b) => a.startTime.toSeconds() - b.startTime.toSeconds()) :
-		[];
-	res.writeHead(200, {'Content-Type': 'application/json'});
-	res.write(JSON.stringify(events));
-	res.end();
+	firstLoad.then(() => {
+		const events = Object.values(cachedEvents.events)
+			.sort((a, b) => a.startTime.toSeconds() - b.startTime.toSeconds());
+		res.writeHead(200, {'Content-Type': 'application/json'});
+		res.write(JSON.stringify(events));
+		res.end();
+	});
 }
