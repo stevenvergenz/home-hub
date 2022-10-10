@@ -5,17 +5,15 @@ import express from 'express';
 import { resolve } from 'path';
 
 import { getEventsHandler } from './calendar';
+import { getCurrentAqiHandler } from './aqi';
+
+process.on('unhandledRejection', err => console.error(err));
+process.on('uncaughtException', ex => console.error(ex));
 
 const app = express();
-const sessionId = Math.random();
 
-function insertSessionId(req: express.Request, res: express.Response, next: express.NextFunction)
-{
-	res.setHeader('X-Server-Session', sessionId);
-	next();
-}
-
-app.get('/api/calendar/getEvents', insertSessionId, getEventsHandler);
+app.get('/api/calendar/getEvents', getEventsHandler);
+app.get('/api/aqi/getCurrentAqi', getCurrentAqiHandler);
 
 app.use(express.static(resolve(__dirname, '../build')));
 
