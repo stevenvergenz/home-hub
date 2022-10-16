@@ -1,8 +1,10 @@
 import React from 'react';
+import { Duration } from 'luxon';
 import './Aqi.css';
 
 type AqiParams = {
-	zipCode: string;
+	lat: number;
+	long: number;
 }
 
 /**
@@ -11,12 +13,21 @@ type AqiParams = {
 type ApiResponse = {
 	ParameterName: string;
 	AQI: number;
-	Category: { Name: string; Number: number; }
+	Category: { Name: string; Number: number; },
+	DateObserved: string;
+	HourObserved: number;
 }
+
+const dummy: ApiResponse = {
+	ParameterName: "",
+	AQI: -1,
+	Category: { Name: "Unknown", Number: 7 },
+	HourObserved: 0,
+	DateObserved: "1900-01-01"
+};
 
 export default function Aqi(params: AqiParams)
 {
-	const dummy = { ParameterName: "", AQI: -1, Category: { Name: "Unknown", Number: 7 } };
 	const [aqi, setAqi] = React.useState(dummy as ApiResponse | undefined);
 
 	React.useEffect(() =>
@@ -26,14 +37,16 @@ export default function Aqi(params: AqiParams)
 			setAqi(res.reduce((max, val) => val.AQI > max.AQI ? val : max, dummy));
 		}
 
-		getCurrentAqi(params.zipCode).then(processResults);
+		getCurrentAqi(params.lat, params.long).then(processResults);
 
 		setInterval(() => {
-			getCurrentAqi(params.zipCode).then(processResults);
-		}, 1000 * 60 * 20);
-	}, [params.zipCode]);
+			getCurrentAqi(params.lat, params.long).then(processResults);
+		}, Duration.fromObject({ hours: 1 }).toMillis());
+	}, [params.lat, params.long]);
 
-	const categoryClass = aqi?.Category.Name.toLowerCase().replace(/ /g, "_")
+	const categoryClass = (aqi && aqi.AQI <= 15 && aqi.AQI >= 0) ?
+		"negligible" :
+		aqi?.Category.Name.toLowerCase().replace(/ /g, "_")
 
 	return (
 		<p className={"aqi " + categoryClass}>
@@ -43,8 +56,8 @@ export default function Aqi(params: AqiParams)
 	);
 }
 
-export async function getCurrentAqi(zipCode: string): Promise<ApiResponse[]>
+export async function getCurrentAqi(lat: number, long: number): Promise<ApiResponse[]>
 {
-	const res = await fetch(`/api/aqi/getCurrentAqi?zipCode=${zipCode}`);
+	const res = await fetch(`/api/aqi/getCurrentAqi?lat=${lat}&long=${long}`);
 	return (await res.json()) as ApiResponse[];
 }

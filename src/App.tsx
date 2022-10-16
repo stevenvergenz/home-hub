@@ -11,7 +11,7 @@ export default function App()
 		<div className="App">
 			<div id="leftPane">
 				<Clock />
-				<Aqi zipCode="98042" />
+				<Aqi lat={47.36} long={-122.16} />
 			</div>
 			<div id="rightPane">
 				<Calendar />

@@ -5,7 +5,7 @@ import Event from './Event';
 import { Event as ApiEvent } from './Api';
 import './Calendar.css';
 
-const colorData: {[id: string]: {background: string; foreground: string;}} = {
+/*const colorData: {[id: string]: {background: string; foreground: string;}} = {
 	'1': { background: '#ac725e', foreground: '#1d1d1d' },
 	'2': { background: '#d06b64', foreground: '#1d1d1d' },
 	'3': { background: '#f83a22', foreground: '#1d1d1d' },
@@ -30,7 +30,7 @@ const colorData: {[id: string]: {background: string; foreground: string;}} = {
 	'22': { background: '#f691b2', foreground: '#1d1d1d' },
 	'23': { background: '#cd74e6', foreground: '#1d1d1d' },
 	'24': { background: '#a47ae2', foreground: '#1d1d1d' }
-};
+};*/
 
 type DayProps =
 {

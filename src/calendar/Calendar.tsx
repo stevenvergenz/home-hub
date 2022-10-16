@@ -43,8 +43,8 @@ export default function Calendar()
 function generateDayGrid(events: Event[]): JSX.Element[]
 {
 	const today = DateTime.now();
-	const firstDay = DateTime.fromObject({ year: today.year, month: today.month, day: 1});
-	const lastDay = firstDay.plus({ days: firstDay.daysInMonth });
+	const firstDay = DateTime.fromObject({ year: today.year, month: today.month, day: today.day });
+	const lastDay = firstDay.plus({ days: 14 }); //firstDay.plus({ days: firstDay.daysInMonth });
 	const firstVisibleDay = firstDay.minus({ days: firstDay.weekday % 7 });
 	const lastVisibleDay = lastDay.plus({ days: 6 - (lastDay.weekday % 7) });
 
