@@ -7,7 +7,8 @@
     "express": "^4.18.1",
     "googleapis": "^108.0.0",
     "luxon": "^3.0.3",
-    "node-fetch": "^2.6.7"
+    "node-fetch": "^2.6.7",
+    "weather-icons": "github:erikflowers/weather-icons"
   },
   "scripts": {
     "start": "node serverBuild/index.js",

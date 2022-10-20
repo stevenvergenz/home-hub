@@ -6,6 +6,7 @@ import { resolve } from 'path';
 
 import { getEventsHandler } from './calendar';
 import { getCurrentAqiHandler } from './aqi';
+import { getCurrentWeatherHandler, getForecastWeatherHandler } from './weather';
 
 process.on('unhandledRejection', err => console.error(err));
 process.on('uncaughtException', ex => console.error(ex));
@@ -14,6 +15,8 @@ const app = express();
 
 app.get('/api/calendar/getEvents', getEventsHandler);
 app.get('/api/aqi/getCurrentAqi', getCurrentAqiHandler);
+app.get('/api/weather/current', getCurrentWeatherHandler);
+app.get('/api/weather/forecast', getForecastWeatherHandler);
 
 app.use(express.static(resolve(__dirname, '../build')));
 

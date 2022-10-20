@@ -8,7 +8,7 @@
 	background-color: rgba(211, 211, 211, 0.7);
 }
 
-.aqi.good {
+.aqi.negligible {
 	display: none;
 }
 
@@ -17,7 +17,7 @@
 }
 
 .aqi.unhealthy_for_sensitive_groups {
-	background-color: orange;;
+	background-color: orange;
 }
 
 .aqi.unhealthy {
