@@ -1,19 +1,13 @@
-type CurrentApiResponse =
+type ApiResponse<T> =
 {
-	data: WeatherReading | undefined;
-};
-
-type ForecastApiResponse =
-{
-	data: WeatherReading[] | undefined;
+	data: T | undefined;
 };
 
 export type WeatherReading =
 {
 	dt: number;
 	main: { temp: number; };
-	weather: { id: string; };
-	clouds: { all: number; };
+	weather: { icon: string; }[];
 	pop?: number;
 	sys?: { pod: string; };
 };
@@ -22,7 +16,7 @@ export async function getCurrentWeather(lat: string, long: string): Promise<Weat
 {
 	const res = await fetch(`/api/weather/current?lat=${lat}&long=${long}`);
 	if (res.ok) {
-		const resData = await res.json() as CurrentApiResponse;
+		const resData = await res.json() as ApiResponse<WeatherReading>;
 		return resData.data;
 	}
 	else {
