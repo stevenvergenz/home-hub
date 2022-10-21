@@ -30,8 +30,8 @@
 
 .weather-tile.big
 {
-	flex-grow: 1;
 	font-size: 3em;
+	margin: 0 20px;
 }
 
 .weather-tile.big > .label
@@ -42,8 +42,8 @@
 .weather-tile
 {
 	text-align: center;
-	flex-basis: 50px;
 	margin: 5px;
+	flex-basis: 55px;
 }
 
 .weather-tile > i
@@ -54,4 +54,14 @@
 .weather-tile > p
 {
 	margin: 0;
+}
+
+.weather-tile span.high
+{
+	color: darkred;
+}
+
+.weather-tile span.low
+{
+	color: darkblue;
 }

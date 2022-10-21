@@ -1,4 +1,5 @@
 import React from 'react';
+import { DateTime } from 'luxon';
 import { WeatherReading } from './Api';
 
 import './Weather.css';
@@ -17,11 +18,25 @@ export default function WeatherTile(params: WeatherTileParams): JSX.Element
 		classes.push("big");
 	}
 
+	let forecast: JSX.Element | null = null;
+	if (params.data?.main.temp) {
+		forecast = (<p key="temp" className="forecast">{params.data?.main.temp?.toFixed(0)}&deg;F</p>);
+	}
+	else if (params.data?.main.temp_max && params.data?.main.temp_min) {
+		forecast = (
+			<p key="temp_range" className="forecast">
+				<span className="high">{params.data?.main.temp_max?.toFixed(0)}</span>
+				/
+				<span className="low">{params.data?.main.temp_min?.toFixed(0)}</span>
+				&deg;F
+			</p>);
+	}
+
 	return (
 		<div className={classes.join(" ")}>
-			<i className={formatIcon(params.data?.weather[0].icon)}></i>
+			<i className={formatIcon(params.data?.weather.icon)}></i>
 			<p className="label">{formatTime(params.data?.dt)}</p>
-			<p className="forecast">{params.data?.main.temp.toFixed(0)}&deg;F</p>
+			{forecast}
 		</div>
 	);
 }
@@ -64,7 +79,17 @@ function formatIcon(id?: string): string
 	}
 }
 
-function formatTime(dt: number | undefined): string
+function formatTime(dt: DateTime | undefined): string
 {
-	return "6 PM";
+	if (!dt) return "";
+
+	const diff = dt.diffNow().as("hours");
+	if (diff < 18)
+	{
+		return dt.toFormat("h a");
+	}
+	else
+	{
+		return dt.weekdayLong;
+	}
 }
