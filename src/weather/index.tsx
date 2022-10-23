@@ -39,16 +39,16 @@ export default function Weather(params: WeatherParams): JSX.Element
 					<WeatherTile data={forecast?.[2]} />
 				</div>
 				<div className="weather-row">
-					<WeatherTile data={findExtendedForecast(forecast, 1)} />
-					<WeatherTile data={findExtendedForecast(forecast, 2)} />
-					<WeatherTile data={findExtendedForecast(forecast, 3)} />
+					<WeatherTile data={getAggregateForecast(forecast, 1)} />
+					<WeatherTile data={getAggregateForecast(forecast, 2)} />
+					<WeatherTile data={getAggregateForecast(forecast, 3)} />
 				</div>
 			</div>
 		</div>
 	);
 }
 
-function findExtendedForecast(readings: WeatherReading[] | undefined, daysOut: number): WeatherReading | undefined
+function getAggregateForecast(readings: WeatherReading[] | undefined, daysOut: number): WeatherReading | undefined
 {
 	if (!readings) return undefined;
 

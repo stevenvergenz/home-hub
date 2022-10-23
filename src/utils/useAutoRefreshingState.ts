@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function useAutoRefreshingState<T>(
 	initValue: T,
-	refreshAction: () => Promise<T>,
+	refreshAction: (oldValue: T) => Promise<T>,
 	dependencies: React.DependencyList,
 	interval: number): [T, React.Dispatch<React.SetStateAction<T>>]
 {
@@ -10,7 +10,7 @@ export default function useAutoRefreshingState<T>(
 	React.useEffect(() =>
 	{
 		function run() {
-			refreshAction().then(t => setState(t));
+			refreshAction(state).then(t => setState(t));
 		}
 		
 		run();

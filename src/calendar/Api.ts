@@ -18,38 +18,51 @@ export type Event =
 	endTime: DateTime;
 };
 
-let cachedEvents: Event[];
-let getEventsPromise: Promise<Event[]> | null = null;
-
-export function getEvents(): Promise<Event[]>
+export type EventData =
 {
-	if (getEventsPromise !== null)
-	{
-		return getEventsPromise;
-	}
-	else
-	{
-		getEventsPromise = getEventsInternal();
-		getEventsPromise.then(() => { getEventsPromise = null; })
-	}
-	return getEventsPromise;
-}
+	calendars: { [id: string]: Calendar };
+	events: { [id: string]: Event };
+	lastUpdate: DateTime;
+};
 
-async function getEventsInternal(): Promise<Event[]>
+export async function getEvents(updateData: EventData | undefined, start: DateTime, end: DateTime): Promise<EventData>
 {
-	const res = await fetch("/api/calendar/getEvents");
+	let url = `/api/calendar/getEvents?start=${start.toISO()}&end=${end.toISO()}`;
+	if (updateData) {
+		url += `&updatedSince=${updateData.lastUpdate.toISO()}`;
+	}
+	const res = await fetch(url);
 	if (res.ok)
 	{
 		const data = await res.json();
 
-		for (const e of data)
+		data.lastUpdate = DateTime.fromISO(data.lastUpdate);
+		for (const eid in data.events)
 		{
-			e.startTime = DateTime.fromISO(e.startTime);
-			e.endTime = DateTime.fromISO(e.endTime);
+			data.events[eid].startTime = DateTime.fromISO(data.events[eid].startTime);
+			data.events[eid].endTime = DateTime.fromISO(data.events[eid].endTime);
 		}
 
-		cachedEvents = data as Event[];
-		return cachedEvents;
+		const events = data as EventData;
+		if (updateData)
+		{
+			updateData.lastUpdate = events.lastUpdate;
+			for (const id in events.events)
+			{
+				updateData.events[id] = events.events[id];
+			}
+			for (const id in updateData.events)
+			{
+				if (updateData.events[id].endTime < start) {
+					delete updateData.events[id];
+				}
+			}
+			return updateData;
+		}
+		else
+		{
+			return events;
+		}
 	}
 	else {
 		throw new Error(`Failed to fetch events: ${res.status}`);

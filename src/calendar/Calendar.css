@@ -61,6 +61,13 @@
 	text-indent: -10px;
 }
 
+.event.past
+{
+	white-space: nowrap;
+	text-decoration: line-through;
+	overflow: hidden;
+}
+
 .tagList .event {
 	overflow: hidden;
 	text-overflow: ellipsis;

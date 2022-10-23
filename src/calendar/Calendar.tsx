@@ -1,20 +1,21 @@
 import { DateTime, Duration } from 'luxon';
-import { useEffect, useState } from 'react';
 import useAutoRefreshingState from '../utils/useAutoRefreshingState';
 
 import Day from './Day';
-import { Event, getEvents } from './Api';
+import { EventData, getEvents } from './Api';
 import './Calendar.css';
 
-export default function Calendar()
+export default function Calendar(params: { today: DateTime }): JSX.Element
 {
-	const [events, setEvents] = useAutoRefreshingState<Event[]>(
-		[], getEvents, [], Duration.fromObject({minutes: 20}).toMillis());
+	const [events] = useAutoRefreshingState<EventData | undefined>(
+		undefined,
+		oldList => getEvents(oldList, ...getVisibleRange(params.today)),
+		[params.today],
+		Duration.fromObject({minutes: 20}).toMillis());
 
-	const today = DateTime.now();
 	return (
 		<div className="calendar">
-			<h1>{today.monthLong}</h1>
+			<h1>{params.today.monthLong}</h1>
 			<table>
 				<thead>
 					<tr className="week">
@@ -28,20 +29,16 @@ export default function Calendar()
 					</tr>
 				</thead>
 				<tbody>
-					{generateDayGrid(events)}
+					{generateDayGrid(params.today, events)}
 				</tbody>
 			</table>
 		</div>
 	);
 }
 
-function generateDayGrid(events: Event[]): JSX.Element[]
+function generateDayGrid(today: DateTime, events: EventData | undefined): JSX.Element[]
 {
-	const today = DateTime.now();
-	const firstDay = DateTime.fromObject({ year: today.year, month: today.month, day: today.day });
-	const lastDay = firstDay.plus({ days: 7 });
-	const firstVisibleDay = firstDay.minus({ days: firstDay.weekday % 7 });
-	const lastVisibleDay = lastDay.plus({ days: 6 - (lastDay.weekday % 7) });
+	const [firstVisibleDay, lastVisibleDay] = getVisibleRange(today);
 
 	const weeks: JSX.Element[] = [];
 	let days: JSX.Element[] = [];
@@ -52,6 +49,7 @@ function generateDayGrid(events: Event[]): JSX.Element[]
 			<Day key={"day-"+gridIndex}
 				gridIndex={gridIndex}
 				date={date}
+				now={today}
 				events={events}
 				isOverflow={date < today.minus({days: 1})}/>);
 
@@ -70,4 +68,13 @@ function generateDayGrid(events: Event[]): JSX.Element[]
 	}
 
 	return weeks;
+}
+
+function getVisibleRange(today: DateTime): [DateTime, DateTime]
+{
+	const firstDay = today.set({ hour: 0, minute: 0, second: 0, millisecond: 0});
+	const lastDay = firstDay.plus({ days: 14 });
+	const firstVisibleDay = firstDay.minus({ days: 7 + (firstDay.weekday % 7) });
+	const lastVisibleDay = lastDay.plus({ days: 7 - (lastDay.weekday % 7) });
+	return [firstVisibleDay, lastVisibleDay];
 }

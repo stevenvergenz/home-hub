@@ -2,7 +2,7 @@ import React from 'react';
 import { DateTime } from 'luxon';
 
 import Event from './Event';
-import { Event as ApiEvent } from './Api';
+import { Event as ApiEvent, EventData } from './Api';
 import './Calendar.css';
 
 /*const colorData: {[id: string]: {background: string; foreground: string;}} = {
@@ -36,8 +36,9 @@ type DayProps =
 {
 	gridIndex: number;
 	date: DateTime;
-	events: ApiEvent[];
+	events: EventData | undefined;
 	isOverflow: boolean;
+	now: DateTime;
 };
 
 type DayState =
@@ -56,15 +57,15 @@ export default function Day(props: DayProps)
 		{
 			if (/holiday|birthday/i.test(e.calendar.name))
 			{
-				state.specials.push(<Event key={e.id} def={e} date={props.date} />);
+				state.specials.push(<Event key={e.id} def={e} now={props.now} date={props.date} />);
 			}
 			else
 			{
-				state.events.push(<Event key={e.id} def={e} date={props.date} />);
+				state.events.push(<Event key={e.id} def={e} now={props.now} date={props.date} />);
 			}
 		}
 		setDayState(state);
-	}, [props.date, props.events]);
+	}, [props.date, props.events, props.now]);
 
 	return (
 		<td className={`day ${props.isOverflow ? "overflow" : ""}`}>
@@ -77,17 +78,20 @@ export default function Day(props: DayProps)
 	);
 }
 
-export function getEventsOnDay(day: DateTime, events: ApiEvent[]): ApiEvent[]
+export function getEventsOnDay(day: DateTime, events: EventData | undefined): ApiEvent[]
 {
+	if (!events) return [];
+
 	const nextDay = day.plus({days: 1});
 	const selectedEvents: ApiEvent[] = [];
-	for (const e of events)
+	for (const id in events.events)
 	{
+		const e = events?.events[id];
 		if (e.endTime > day && e.startTime < nextDay)
 		{
 			selectedEvents.push(e);
 		}
 	}
 
-	return selectedEvents;
+	return selectedEvents.sort((a, b) => b.startTime.toSeconds() - a.startTime.toSeconds());
 }
