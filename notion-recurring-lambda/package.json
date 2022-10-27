@@ -1,0 +1,19 @@
+{
+  "name": "notion-recurring-lambda",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.lambda.json"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@darkeyedevelopers/natural-cron.js": "github:stevenvergenz/natural-cron.js#master",
+    "@notionhq/client": "^2.2.1",
+    "aws-xray-sdk": "^3.3.8",
+    "cron-parser": "^4.6.0",
+    "luxon": "^3.0.4"
+  }
+}
