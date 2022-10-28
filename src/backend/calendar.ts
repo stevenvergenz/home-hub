@@ -30,6 +30,8 @@ type EventData =
 {
 	calendars: { [id: string]: Calendar };
 	events: { [id: string]: Event };
+	rangeStart: DateTime;
+	rangeEnd: DateTime;
 	lastUpdate: DateTime;
 };
 
@@ -50,6 +52,8 @@ async function getEvents(
 	const data: EventData = {
 		calendars: calendarCache,
 		events: {},
+		rangeStart: firstVisibleDay,
+		rangeEnd: lastVisibleDay,
 		lastUpdate: DateTime.now()
 	};
 
