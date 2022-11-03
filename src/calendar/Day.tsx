@@ -37,22 +37,28 @@ type DayProps =
 	gridIndex: number;
 	date: DateTime;
 	events: EventData | undefined;
-	isOverflow: boolean;
 	now: DateTime;
 };
 
 type DayState =
 {
+	relative: number;
 	specials: JSX.Element[];
 	events: JSX.Element[];
 };
 
 export default function Day(props: DayProps)
 {
-	let [dayState, setDayState] = React.useState({events: [], specials: []} as DayState);
+	let [dayState, setDayState] = React.useState({relative: 1, events: [], specials: []} as DayState);
 	React.useEffect(() => {
 		const events = getEventsOnDay(props.date, props.events);
-		const state: DayState = {events: [], specials: []};
+		const state: DayState =
+		{
+			relative: Math.floor(props.date.diff(props.now).as("days") + 1),
+			events: [],
+			specials: []
+		};
+
 		for (const e of events)
 		{
 			if (/holiday|birthday/i.test(e.calendar.name))
@@ -68,7 +74,7 @@ export default function Day(props: DayProps)
 	}, [props.date, props.events, props.now]);
 
 	return (
-		<td className={`day ${props.isOverflow ? "overflow" : ""}`}>
+		<td className={`day ${dayState.relative < 0 ? "past" : dayState.relative === 0 ? "today" : ""}`}>
 			<div className="dayHeader">
 				<div className="dayLabel">{props.date.day}</div>
 				<div className="tagList">{dayState.specials}</div>

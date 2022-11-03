@@ -4,6 +4,7 @@ import { DateTime, Duration } from 'luxon';
 import WeatherTile from './WeatherTile';
 import { getCurrentWeather, getForecastWeather, WeatherReading } from './Api';
 import useAutoRefreshingState from '../utils/useAutoRefreshingState';
+import { weatherCron, forecastCron } from '../timings';
 
 import './Weather.css';
 import 'weather-icons/css/weather-icons.min.css'
@@ -19,14 +20,14 @@ export default function Weather(params: WeatherParams): JSX.Element
 		undefined,
 		() => getCurrentWeather(params.lat, params.long),
 		[params.lat, params.long],
-		1000 * 60 * 60
+		weatherCron
 	);
 
 	const [forecast] = useAutoRefreshingState<WeatherReading[] | undefined>(
 		[],
 		() => getForecastWeather(params.lat, params.long),
 		[params.lat, params.long],
-		1000 * 60 * 60 * 8
+		forecastCron
 	);
 
 	return (
@@ -37,6 +38,7 @@ export default function Weather(params: WeatherParams): JSX.Element
 					<WeatherTile data={forecast?.[0]} />
 					<WeatherTile data={forecast?.[1]} />
 					<WeatherTile data={forecast?.[2]} />
+					<WeatherTile data={forecast?.[3]} />
 				</div>
 				<div className="weather-row">
 					<WeatherTile data={getAggregateForecast(forecast, 1)} />
