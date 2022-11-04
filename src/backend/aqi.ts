@@ -1,12 +1,12 @@
 import * as E from 'express';
 import fetch from 'node-fetch';
+import { config } from './config';
 
-export async function getCurrentAqi(lat: number, long: number): Promise<any>
+export async function getCurrentAqi(): Promise<any>
 {
 	const res = await fetch("https://www.airnowapi.org/aq/observation/latLong/current/?format=application/json" +
-		`&latitude=${lat}&longitude=${long}&distance=25&api_key=${process.env.AIRNOW_KEY}`);
-	//const res = await fetch("https://www.airnowapi.org/aq/observation/zipCode/current?format=application/json" +
-	//	`&zipCode=${zipCode}&api_key=${process.env.AIRNOW_KEY}`);
+		`&latitude=${config?.location.latitude}&longitude=${config?.location.longitude}` +
+		`&distance=25&api_key=${process.env.AIRNOW_KEY}`);
 	
 	if (res.ok)
 	{
@@ -21,7 +21,5 @@ export async function getCurrentAqi(lat: number, long: number): Promise<any>
 
 export async function getCurrentAqiHandler(req: E.Request, res: E.Response)
 {
-	res.json(await getCurrentAqi(
-		parseFloat(req.query["lat"] as string),
-		parseFloat(req.query["long"] as string)));
+	res.json(await getCurrentAqi());
 }

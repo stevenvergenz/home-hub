@@ -1,10 +1,12 @@
 import * as E from 'express';
 import fetch from 'node-fetch';
+import { config } from './config';
 
-async function getForecast(lat: string, long: string): Promise<any>
+async function getForecast(): Promise<any>
 {
 	const res = await fetch("https://api.openweathermap.org/data/2.5/forecast"
-		+ `?lat=${lat}&lon=${long}&appid=${process.env.OPENWEATHERMAP_KEY}&cnt=26&units=imperial`);
+		+ `?lat=${config?.location.latitude}&lon=${config?.location.longitude}`
+		+ `&appid=${process.env.OPENWEATHERMAP_KEY}&cnt=26&units=imperial`);
 
 	if (res.ok)
 	{
@@ -17,10 +19,11 @@ async function getForecast(lat: string, long: string): Promise<any>
 	}
 }
 
-async function getCurrent(lat: string, long: string)
+async function getCurrent()
 {
 	const res = await fetch("https://api.openweathermap.org/data/2.5/weather"
-		+ `?lat=${lat}&lon=${long}&appid=${process.env.OPENWEATHERMAP_KEY}&units=imperial`);
+		+ `?lat=${config?.location.latitude}&lon=${config?.location.longitude}`
+		+ `&appid=${process.env.OPENWEATHERMAP_KEY}&units=imperial`);
 
 	if (res.ok)
 	{
@@ -35,12 +38,9 @@ async function getCurrent(lat: string, long: string)
 
 export async function getCurrentWeatherHandler(req: E.Request, res: E.Response)
 {
-	const lat = req.query["lat"] as string,
-		long = req.query["long"] as string;
-
 	try
 	{
-		const payload = await getCurrent(lat, long);
+		const payload = await getCurrent();
 		res.status(200).json(payload);
 	}
 	catch
@@ -51,12 +51,9 @@ export async function getCurrentWeatherHandler(req: E.Request, res: E.Response)
 
 export async function getForecastWeatherHandler(req: E.Request, res: E.Response)
 {
-	const lat = req.query["lat"] as string,
-		long = req.query["long"] as string;
-
 	try
 	{
-		const payload = await getForecast(lat, long);
+		const payload = await getForecast();
 		res.status(200).json(payload);
 	}
 	catch

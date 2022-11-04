@@ -1,11 +1,7 @@
 import { calendar_v3, google as G } from 'googleapis';
-import { DateTime, Duration } from 'luxon';
-import { IncomingMessage, ServerResponse } from 'http';
-import { resolve } from 'path';
+import { DateTime } from 'luxon';
 import * as E from 'express';
-
-import CalendarConfig from './config';
-const config = require(resolve(process.cwd(), process.env.CONFIG_PATH || './config.json')) as CalendarConfig;
+import { config } from './config';
 const initGcal = false;
 
 type Calendar =
@@ -59,24 +55,24 @@ async function getEvents(
 
 	if (initGcal)
 	{
-		for (const calendarId in config.calendars)
+		for (const calendarId in config?.calendars ?? {})
 		{
 			const res = await Api.calendarList.insert({ requestBody: {
 				id: calendarId,
-				colorId: config.calendars[calendarId].colorId?.toString(),
-				backgroundColor: config.calendars[calendarId].color,
+				colorId: config?.calendars[calendarId].colorId?.toString(),
+				backgroundColor: config?.calendars[calendarId].color,
 				selected: true }});
 		}
 	}
 
-	if (Object.keys(calendarCache).length !== Object.keys(config.calendars).length)
+	if (Object.keys(calendarCache).length !== Object.keys(config?.calendars ?? {}).length)
 	{
 		const calendarsResponse = await Api.calendarList.list();
 		for (const calendar of calendarsResponse.data.items ?? [])
 		{
 			calendarCache[calendar.id as string] = {
 				id: calendar.id as string,
-				name: config.calendars[calendar.id as string].name,
+				name: config?.calendars[calendar.id as string].name ?? calendar.summary as string,
 				bgColor: calendar.backgroundColor as string,
 				fgColor: calendar.foregroundColor as string
 			};
