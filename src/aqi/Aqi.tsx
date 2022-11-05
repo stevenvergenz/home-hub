@@ -38,7 +38,7 @@ export default function Aqi()
 		aqi?.Category.Name.toLowerCase().replace(/ /g, "_")
 
 	return (
-		<p className={"aqi " + categoryClass}>
+		<p className={"aqi panel " + categoryClass}>
 			Air Quality: {aqi?.AQI} ({aqi?.ParameterName})<br />
 			{aqi?.Category.Name}
 		</p>
