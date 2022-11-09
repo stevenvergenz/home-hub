@@ -24,9 +24,9 @@ export default function useAutoRefreshingState<T>(
 			lastJob = lastJob
 				.then(() => refreshAction(state))
 				.then(t => {
-					if (cacheKey) {
+					/*if (cacheKey) {
 						cacheNewState(cacheKey, t, cron.nextDate());
-					}
+					}*/
 					setState(t);
 				})
 				.catch(err => console.error(err));
@@ -42,7 +42,7 @@ export default function useAutoRefreshingState<T>(
 			true
 		);
 		
-		if (cacheKey)
+		/*if (cacheKey)
 		{
 			const cachedData = getFromCache<T>(cacheKey);
 			if (cachedData) {
@@ -52,7 +52,7 @@ export default function useAutoRefreshingState<T>(
 				run();
 			}
 		}
-		else
+		else*/
 		{
 			run();
 		}

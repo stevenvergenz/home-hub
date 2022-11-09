@@ -20,7 +20,7 @@ export default function App()
 		timeCron);
 	const [date] = useAutoRefreshingState(
 		null,
-		DateTime.now().set({ hour: 0, minute: 0, second: 0, millisecond: 0 }),
+		DateTime.now().set({ minute: 0, second: 0, millisecond: 0 }),
 		() => Promise.resolve(DateTime.now()),
 		[],
 		dateCron);
@@ -31,10 +31,10 @@ export default function App()
 				<Clock time={time} />
 				<Aqi />
 				<Weather />
-				<Tasks today={time} />
+				<Tasks today={date} />
 			</div>
 			<div id="rightPane">
-				<Calendar today={time} />
+				<Calendar today={date} />
 			</div>
 		</div>
 	);

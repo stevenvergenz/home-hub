@@ -1,6 +1,6 @@
 /** Every minute on the 0 */
 export const timeCron = "0 * * * * *";
-/** Every day at midnight */
+/** Every hour on the 0 */
 export const dateCron = "0 0 * * * *";
 /** Every hour from 6am to midnight */
 export const calendarCron = "0 0 0,6-23 * * *";
