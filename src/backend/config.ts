@@ -14,6 +14,7 @@ export type Config = {
 		latitude: number;
 		longitude: number;
 	};
+	todoProjects: string[];
 };
 
 let config: Config | null = null;
