@@ -6,9 +6,12 @@ export default function Clock()
 {
 	const [now, setNow] = React.useState(DateTime.now());
 	React.useEffect(() => {
-		setInterval(() => {
+		setTimeout(() => {
 			setNow(DateTime.now());
-		}, 5000);
+			setInterval(() => {
+				setNow(DateTime.now());
+			}, 60000);
+		}, (60 - DateTime.now().second) * 1000);
 	});
 
 	return (
