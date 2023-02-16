@@ -2,6 +2,7 @@ import { calendar_v3, google as G } from 'googleapis';
 import { DateTime, Duration } from 'luxon';
 import { IncomingMessage, ServerResponse } from 'http';
 import { resolve } from 'path';
+import * as E from 'express';
 
 import CalendarConfig from './config';
 const config = require(resolve(process.cwd(), process.env.CONFIG_PATH || './config.json')) as CalendarConfig;
@@ -25,13 +26,11 @@ type Event =
 	endTime: DateTime;
 };
 
-type CacheData =
+type EventData =
 {
 	calendars: { [id: string]: Calendar };
 	events: { [id: string]: Event };
-	rangeStart: DateTime;
-	rangeEnd: DateTime;
-	lastRefresh: DateTime;
+	lastUpdate: DateTime;
 };
 
 const Api = G.calendar("v3");
@@ -42,28 +41,19 @@ G.options({ auth: new G.auth.GoogleAuth({ scopes: [
 	"https://www.googleapis.com/auth/calendar.events.readonly"
 ]}) });
 
-let cachedEvents: CacheData;
+const calendarCache: {[id: string]: Calendar} = {};
 
-const firstLoad = getEvents();
-setInterval(
-	getEvents,
-	Duration.fromObject({ minutes: parseInt(process.env.REFRESH_MINUTES ?? '60') }).toMillis());
-
-async function getEvents(): Promise<void>
+async function getEvents(
+	firstVisibleDay: DateTime, lastVisibleDay: DateTime, 
+	updatedSince: DateTime | undefined = undefined): Promise<EventData>
 {
-	console.log(`Fetching latest events from google as of ${cachedEvents?.lastRefresh}`);
-	const now = DateTime.now();
-	const [firstVisibleDay, lastVisibleDay] = getVisibleRange(now);
-
-	const data: CacheData = {
-		calendars: cachedEvents?.calendars ?? {},
-		events: cachedEvents?.events ?? {},
-		rangeStart: firstVisibleDay,
-		rangeEnd: lastVisibleDay,
-		lastRefresh: now
+	const data: EventData = {
+		calendars: calendarCache,
+		events: {},
+		lastUpdate: DateTime.now()
 	};
 
-	if (initGcal && !cachedEvents)
+	if (initGcal)
 	{
 		for (const calendarId in config.calendars)
 		{
@@ -75,12 +65,12 @@ async function getEvents(): Promise<void>
 		}
 	}
 
-	if (Object.keys(data.calendars).length !== Object.keys(config.calendars).length)
+	if (Object.keys(calendarCache).length !== Object.keys(config.calendars).length)
 	{
 		const calendarsResponse = await Api.calendarList.list();
 		for (const calendar of calendarsResponse.data.items ?? [])
 		{
-			data.calendars[calendar.id as string] = {
+			calendarCache[calendar.id as string] = {
 				id: calendar.id as string,
 				name: calendar.summary as string,
 				bgColor: calendar.backgroundColor as string,
@@ -89,16 +79,16 @@ async function getEvents(): Promise<void>
 		}
 	}
 
-	for (const calendarId in data.calendars)
+	for (const calendarId in calendarCache)
 	{
 		const eventsRes = await Api.events.list({
 			calendarId,
 			timeMin: firstVisibleDay.toISO(),
 			timeMax: lastVisibleDay.toISO(),
+			updatedMin: updatedSince?.toISO(),
 			singleEvents: true,
 			showDeleted: true,
-			orderBy: "startTime",
-			updatedMin: cachedEvents?.lastRefresh.toISO(),
+			orderBy: "startTime"
 		});
 
 		for (const event of eventsRes.data.items ?? [])
@@ -121,16 +111,7 @@ async function getEvents(): Promise<void>
 		}
 	}
 
-	cachedEvents = data;
-}
-
-function getVisibleRange(today: DateTime): [DateTime, DateTime]
-{
-	const firstDay = DateTime.fromObject({ year: today.year, month: today.month, day: 1});
-	const lastDay = firstDay.plus({ days: firstDay.daysInMonth });
-	const firstVisibleDay = firstDay.minus({ days: firstDay.weekday % 7 });
-	const lastVisibleDay = lastDay.plus({ days: 7 - (lastDay.weekday % 7) });
-	return [firstVisibleDay, lastVisibleDay];
+	return data;
 }
 
 function parseDate(dt: calendar_v3.Schema$EventDateTime | undefined): DateTime
@@ -146,13 +127,15 @@ function parseDate(dt: calendar_v3.Schema$EventDateTime | undefined): DateTime
 	}
 }
 
-export async function getEventsHandler(req: IncomingMessage, res: ServerResponse)
+export async function getEventsHandler(req: E.Request, res: E.Response)
 {
-	firstLoad.then(() => {
-		const events = Object.values(cachedEvents.events)
-			.sort((a, b) => a.startTime.toSeconds() - b.startTime.toSeconds());
-		res.writeHead(200, {'Content-Type': 'application/json'});
-		res.write(JSON.stringify(events));
-		res.end();
-	});
+	const start = DateTime.fromISO(req.query["start"] as string);
+	const end = DateTime.fromISO(req.query["end"] as string);
+	let refresh: DateTime | undefined = undefined;
+	if (req.query["updatedSince"]) {
+		refresh = DateTime.fromISO(req.query["updatedSince"] as string);
+	}
+
+	const eventData = await getEvents(start, end, refresh);
+	res.json(eventData);
 }
