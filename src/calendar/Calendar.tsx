@@ -13,7 +13,7 @@ export default function Calendar()
 		getEvents().then(es => setEvents(es));
 		setInterval(
 			async () => setEvents(await getEvents()),
-			Duration.fromObject({hours: 1}).toMillis());
+			Duration.fromObject({minutes: 20}).toMillis());
 	}, []);
 
 	const today = DateTime.now();
