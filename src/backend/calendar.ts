@@ -1,6 +1,7 @@
-//import assert from 'assert';
+import assert from 'assert';
 import { google as G } from 'googleapis';
 import { DateTime } from 'luxon';
+import { IncomingMessage, ServerResponse } from 'http';
 
 type Calendar =
 {
@@ -10,7 +11,7 @@ type Calendar =
 	fgColor: string;
 };
 
-export type Event =
+type Event =
 {
 	calendarId: string;
 	calendar: Calendar;
@@ -63,6 +64,12 @@ async function getEventsInternal(): Promise<void>
 		lastRefresh: today
 	};
 
+	const auth = new G.auth.GoogleAuth({ scopes: [
+		"https://www.googleapis.com/auth/calendar.readonly",
+		"https://www.googleapis.com/auth/calendar.events.readonly"
+	]});
+	G.options({ auth });
+
 	const calendarsResponse = await Api.calendarList.list();
 	for (const calendar of calendarsResponse.data.items ?? [])
 	{
@@ -97,23 +104,50 @@ async function getEventsInternal(): Promise<void>
 	cachedEvents = data;
 }
 
-export async function getEventsOnDay(day: DateTime): Promise<Event[]>
+async function getEventsOnDay(day: DateTime): Promise<Event[]>
 {
 	if (!cachedEvents)
 	{
 		await getEvents();
 	}
 	
-	//assert(day >= cachedEvents.rangeStart && day <= cachedEvents.rangeStart, `Day out of range: ${day}`);
+	assert(day >= cachedEvents.rangeStart && day <= cachedEvents.rangeEnd,
+		`Day ${day} not between ${cachedEvents.rangeStart} and ${cachedEvents.rangeEnd}`);
 	const nextDay = day.plus({days: 1});
 	const selectedEvents: Event[] = [];
 	for (const e of cachedEvents.events)
 	{
-		if (e.startTime <= day && e.startTime > nextDay)
+		if (e.startTime >= day && e.startTime < nextDay)
 		{
 			selectedEvents.push(e);
 		}
 	}
 
 	return selectedEvents;
+}
+
+export async function getEventsOnDayHandler(req: IncomingMessage, res: ServerResponse)
+{
+	const url = new URL(req.url as string, `http://${req.headers.host}`);
+	if (!url.searchParams.has("day"))
+	{
+		res.writeHead(400, "Bad request: required argument 'day' missing");
+		res.end();
+		return;
+	}
+
+	try
+	{
+		const day = DateTime.fromISO(url.searchParams.get("day") as string);
+		const events = await getEventsOnDay(day);
+		res.writeHead(200, {'Content-Type': 'application/json'});
+		res.write(JSON.stringify(events));
+		res.end();
+	}
+	catch (ex: any)
+	{
+		console.log(ex);
+		res.writeHead(500, ex);
+		res.end();
+	}
 }

@@ -1,8 +1,8 @@
 import React from 'react';
 import { DateTime } from 'luxon';
 
+import { getEventsOnDay } from './Api';
 import './Calendar.css';
-import { Event, getEventsOnDay } from './Api';
 
 type DayProps =
 {
@@ -14,11 +14,11 @@ type DayProps =
 export default function Day(props: DayProps)
 {
 	let events: JSX.Element[] = [];
-	/*React.useEffect(() => {
+	React.useEffect(() => {
 		getEventsOnDay(props.date).then(es => {
 			events = es.map(e => <p>{e.name}</p>);
 		});
-	}, []);*/
+	}, []);
 
 	return (
 		<td className={`day ${props.isOverflow ? "overflow" : ""}`}
