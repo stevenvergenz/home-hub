@@ -6,6 +6,7 @@ import { resolve } from 'path';
 import CalendarConfig from './config';
 
 const config = require(resolve(__dirname, process.env.CONFIG_PATH || '../config.json')) as CalendarConfig;
+const initGcal = false;
 
 type Calendar =
 {
@@ -69,13 +70,14 @@ async function getEventsInternal(): Promise<Event[]>
 	};
 
 	const auth = new G.auth.GoogleAuth({ scopes: [
-		"https://www.googleapis.com/auth/calendar",
-		//"https://www.googleapis.com/auth/calendar.readonly",
+		initGcal
+			? "https://www.googleapis.com/auth/calendar"
+			: "https://www.googleapis.com/auth/calendar.readonly",
 		"https://www.googleapis.com/auth/calendar.events.readonly"
 	]});
 	G.options({ auth });
 
-	if (!cachedEvents)
+	if (initGcal && !cachedEvents)
 	{
 		for (let i = 0; i < config.calendars.length; i++)
 		{
