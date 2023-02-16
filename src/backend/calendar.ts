@@ -23,7 +23,6 @@ type Event =
 	name: string;
 	startTime: DateTime;
 	endTime: DateTime;
-	lastUpdated: DateTime;
 };
 
 type CacheData =
@@ -112,8 +111,7 @@ async function getEvents(): Promise<void>
 					id: event.id as string,
 					name: event.summary as string,
 					startTime: parseDate(event.start),
-					endTime: parseDate(event.end),
-					lastUpdated: DateTime.fromISO(event.updated as string)
+					endTime: parseDate(event.end)
 				};
 			}
 			else if (data.events[event.id as string])

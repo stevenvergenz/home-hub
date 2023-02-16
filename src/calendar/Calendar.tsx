@@ -63,7 +63,7 @@ function generateDayGrid(events: Event[]): JSX.Element[]
 		if (days.length === 7)
 		{
 			weeks.push(
-				<tr className="week" key={"week-"+gridIndex%7}>
+				<tr className="week" key={"week-"+weeks.length}>
 					{days}
 				</tr>
 			);
