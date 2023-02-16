@@ -32,11 +32,17 @@ export default function WeatherTile(params: WeatherTileParams): JSX.Element
 			</p>);
 	}
 
+	let pop: JSX.Element | null = null;
+	if (params.data?.pop !== undefined) {
+		pop = (<p className="pop">{(params.data?.pop * 100).toFixed(0)}%</p>)
+	}
+
 	return (
 		<div className={classes.join(" ")}>
 			<i className={formatIcon(params.data?.weather.icon)}></i>
 			<p className="label">{formatTime(params.data?.dt)}</p>
 			{forecast}
+			{pop}
 		</div>
 	);
 }

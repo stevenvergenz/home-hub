@@ -58,7 +58,7 @@ function findExtendedForecast(readings: WeatherReading[] | undefined, daysOut: n
 		dt: targetDay,
 		main: { temp_min: undefined, temp_max: undefined },
 		weather: { icon: "00d", iconNum: 0 },
-		pop: 0
+		pop: undefined
 	};
 
 	for (let i = 0; i < readings.length; i++)
@@ -73,7 +73,7 @@ function findExtendedForecast(readings: WeatherReading[] | undefined, daysOut: n
 				aggReading.weather.icon = readings[i].weather.icon;
 				aggReading.weather.iconNum = readings[i].weather.iconNum;
 			}
-			aggReading.pop = Math.max(aggReading.pop ?? 0, readings[i].pop ?? 0);
+			aggReading.pop = Math.max(aggReading.pop ?? -Infinity, readings[i].pop ?? -Infinity);
 		}
 	}
 
