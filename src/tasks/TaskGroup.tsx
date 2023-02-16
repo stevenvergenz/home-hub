@@ -9,14 +9,33 @@ type TaskGroupParams =
 	today: DateTime;
 };
 
+const _oldDate = DateTime.fromObject({year: 0});
 export default function TaskGroup(params: TaskGroupParams)
 {
-	return params.tasks.length > 0 ? (
-		<div className="taskGroup">
-			<h3>{params.label}</h3>
-			<ul>
-				{params.tasks.map(t => <Task title={t.content} dueTime={t.due?.datetime} dueDate={t.due?.date} today={params.today} />)}
-			</ul>
-		</div>)
-		: <div className="taskGroup" />;
+	function compareTasks(a: ApiTask, b: ApiTask): number
+	{
+		return (a.due?.datetime ?? a.due?.date ?? _oldDate)
+			.diff(b.due?.datetime ?? b.due?.date ?? _oldDate)
+			.as('minutes');
+	}
+
+	function processTask(t: ApiTask)
+	{
+		return <Task title={t.content} due={t.due?.datetime ?? t.due?.date} today={params.today} />;
+	}
+
+	if (params.tasks.length === 0)
+	{
+		return <div className="taskGroup" />;
+	}
+	else
+	{
+		return (
+			<div className="taskGroup">
+				<h3>{params.label}</h3>
+				<ul>
+					{params.tasks.sort(compareTasks).map(processTask)}
+				</ul>
+			</div>);
+	}
 }

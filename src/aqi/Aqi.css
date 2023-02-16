@@ -8,24 +8,23 @@
 }
 
 .aqi.moderate {
-	background-color: yellow;
+	font-size: 18pt;
 }
 
 .aqi.unhealthy_for_sensitive_groups {
-	background-color: orange;
+	background-color: yellow;
 }
 
 .aqi.unhealthy {
+	background-color: orange;
+}
+
+.aqi.very_unhealthy {
 	background-color: red;
 	color: white;
 }
 
-.aqi.very_unhealthy {
-	background-color: purple;
-	color: white;
-}
-
 .aqi.hazardous {
-	background-color: darkred;
+	background-color: purple;
 	color: white;
 }

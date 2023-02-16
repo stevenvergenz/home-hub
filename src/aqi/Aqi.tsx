@@ -33,7 +33,7 @@ export default function Aqi()
 		aqiCron
 	);
 
-	const categoryClass = (aqi && aqi.AQI < 40 && aqi.AQI >= 0) ?
+	const categoryClass = (aqi && aqi.AQI < 50 && aqi.AQI >= 0) ?
 		"negligible" :
 		aqi?.Category.Name.toLowerCase().replace(/ /g, "_")
 
