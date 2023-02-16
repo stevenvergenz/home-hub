@@ -1,0 +1,9 @@
+{
+	"extends": "./tsconfig.backend.json",
+	"include": ["./notion-recurring-lambda/index.ts"],
+	"exclude": [],
+	"compilerOptions": {
+		"rootDir": "./notion-recurring-lambda",
+		"outDir": "./notion-recurring-lambda",
+	}
+}
