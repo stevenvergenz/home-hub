@@ -1,5 +1,6 @@
 import { DateTime, Duration } from 'luxon';
 import { useEffect, useState } from 'react';
+import useAutoRefreshingState from '../utils/useAutoRefreshingState';
 
 import Day from './Day';
 import { Event, getEvents } from './Api';
@@ -7,14 +8,8 @@ import './Calendar.css';
 
 export default function Calendar()
 {
-	const [events, setEvents] = useState([] as Event[]);
-
-	useEffect(() => {
-		getEvents().then(es => setEvents(es));
-		setInterval(
-			async () => setEvents(await getEvents()),
-			Duration.fromObject({minutes: 20}).toMillis());
-	}, []);
+	const [events, setEvents] = useAutoRefreshingState<Event[]>(
+		[], getEvents, [], Duration.fromObject({minutes: 20}).toMillis());
 
 	const today = DateTime.now();
 	return (
@@ -44,7 +39,7 @@ function generateDayGrid(events: Event[]): JSX.Element[]
 {
 	const today = DateTime.now();
 	const firstDay = DateTime.fromObject({ year: today.year, month: today.month, day: today.day });
-	const lastDay = firstDay.plus({ days: 14 }); //firstDay.plus({ days: firstDay.daysInMonth });
+	const lastDay = firstDay.plus({ days: 7 });
 	const firstVisibleDay = firstDay.minus({ days: firstDay.weekday % 7 });
 	const lastVisibleDay = lastDay.plus({ days: 6 - (lastDay.weekday % 7) });
 

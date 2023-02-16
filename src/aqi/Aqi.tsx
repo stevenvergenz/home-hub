@@ -1,6 +1,7 @@
 import React from 'react';
 import { Duration } from 'luxon';
 import './Aqi.css';
+import useAutoRefreshingState from '../utils/useAutoRefreshingState';
 
 type AqiParams = {
 	lat: number;
@@ -28,21 +29,13 @@ const dummy: ApiResponse = {
 
 export default function Aqi(params: AqiParams)
 {
-	const [aqi, setAqi] = React.useState(dummy as ApiResponse | undefined);
-
-	React.useEffect(() =>
-	{
-		function processResults(res: ApiResponse[])
-		{
-			setAqi(res.reduce((max, val) => val.AQI > max.AQI ? val : max, dummy));
-		}
-
-		getCurrentAqi(params.lat, params.long).then(processResults);
-
-		setInterval(() => {
-			getCurrentAqi(params.lat, params.long).then(processResults);
-		}, Duration.fromObject({ hours: 1 }).toMillis());
-	}, [params.lat, params.long]);
+	const [aqi, setAqi] = useAutoRefreshingState<ApiResponse>(
+		dummy,
+		() => getCurrentAqi(params.lat, params.long)
+			.then((res: ApiResponse[]) => res.reduce((max, val) => val.AQI > max.AQI ? val : max, dummy)),
+		[params.lat, params.long],
+		Duration.fromObject({ hours: 1 }).toMillis()
+	);
 
 	const categoryClass = (aqi && aqi.AQI <= 15 && aqi.AQI >= 0) ?
 		"negligible" :
