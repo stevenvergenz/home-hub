@@ -1,0 +1,36 @@
+.aqi {
+	text-align: center;
+	font-size: 24pt;
+
+	margin: 10px;
+	padding: 10px;
+	border-radius: 10px;
+	background-color: rgba(211, 211, 211, 0.7);
+}
+
+.aqi.good {
+	display: none;
+}
+
+.aqi.moderate {
+	background-color: yellow;
+}
+
+.aqi.unhealthy_for_sensitive_groups {
+	background-color: orange;;
+}
+
+.aqi.unhealthy {
+	background-color: red;
+	color: white;
+}
+
+.aqi.very_unhealthy {
+	background-color: purple;
+	color: white;
+}
+
+.aqi.hazardous {
+	background-color: darkred;
+	color: white;
+}

@@ -1,0 +1,17 @@
+.clock {
+	text-align: center;
+	margin: 10px;
+	padding: 10px;
+	background-color: rgba(211, 211, 211, 0.7);
+	border-radius: 10px;
+}
+
+.clock > h1 {
+	font-size: 42pt;
+	margin: 10px 0;
+}
+
+.clock > h2 {
+	font-size: 24pt;
+	margin: 10px 0;
+}
