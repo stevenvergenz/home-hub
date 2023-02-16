@@ -1,10 +1,10 @@
 import { config as dotenv } from 'dotenv';
+dotenv();
+
 import express from 'express';
 import { resolve } from 'path';
 
 import { getEventsHandler } from './calendar';
-
-dotenv();
 
 const app = express();
 const sessionId = Math.random();
@@ -15,9 +15,7 @@ function insertSessionId(req: express.Request, res: express.Response, next: expr
 	next();
 }
 
-app.get('/api/calendar/getEvents', insertSessionId, (req, res) => {
-	getEventsHandler(req, res);
-});
+app.get('/api/calendar/getEvents', insertSessionId, getEventsHandler);
 
 app.use(express.static(resolve(__dirname, '../build')));
 

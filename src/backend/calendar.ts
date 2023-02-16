@@ -1,11 +1,10 @@
 import { calendar_v3, google as G } from 'googleapis';
-import { DateTime } from 'luxon';
+import { DateTime, Duration } from 'luxon';
 import { IncomingMessage, ServerResponse } from 'http';
 import { resolve } from 'path';
 
 import CalendarConfig from './config';
-
-const config = require(resolve(__dirname, process.env.CONFIG_PATH || '../config.json')) as CalendarConfig;
+const config = require(resolve(process.cwd(), process.env.CONFIG_PATH || './config.json')) as CalendarConfig;
 const initGcal = false;
 
 type Calendar =
@@ -24,60 +23,46 @@ type Event =
 	name: string;
 	startTime: DateTime;
 	endTime: DateTime;
+	lastUpdated: DateTime;
 };
 
 type CacheData =
 {
 	calendars: { [id: string]: Calendar };
-	events: Event[];
+	events: { [id: string]: Event };
 	rangeStart: DateTime;
 	rangeEnd: DateTime;
 	lastRefresh: DateTime;
 };
 
 const Api = G.calendar("v3");
+G.options({ auth: new G.auth.GoogleAuth({ scopes: [
+	initGcal
+		? "https://www.googleapis.com/auth/calendar"
+		: "https://www.googleapis.com/auth/calendar.readonly",
+	"https://www.googleapis.com/auth/calendar.events.readonly"
+]}) });
 
 let cachedEvents: CacheData;
-let getEventsPromise: Promise<Event[]> | null = null;
 
-function getEvents(): Promise<Event[]>
-{
-	if (getEventsPromise !== null)
-	{
-		return getEventsPromise;
-	}
-	else
-	{
-		getEventsPromise = getEventsInternal();
-		getEventsPromise.then(() => { getEventsPromise = null; })
-	}
-	return getEventsPromise;
-}
+getEvents();
+setInterval(
+	getEvents,
+	Duration.fromObject({ minutes: parseInt(process.env.REFRESH_MINUTES ?? '60') }).toMillis());
 
-async function getEventsInternal(): Promise<Event[]>
+async function getEvents(): Promise<void>
 {
-	const today = DateTime.now();
-	const firstDay = DateTime.fromObject({ year: today.year, month: today.month, day: 1});
-	const lastDay = firstDay.plus({ days: firstDay.daysInMonth });
-	const firstVisibleDay = firstDay.minus({ days: firstDay.weekday % 7 });
-	const lastVisibleDay = lastDay.plus({ days: 6 - (lastDay.weekday % 7) });
-	const lastVisiblePlusOne = lastVisibleDay.plus({ days: 1 });
+	console.log(`Fetching latest events from google as of ${cachedEvents?.lastRefresh}`);
+	const now = DateTime.now();
+	const [firstVisibleDay, lastVisibleDay] = getVisibleRange(now);
 
 	const data: CacheData = {
-		calendars: {},
-		events: [],
+		calendars: cachedEvents?.calendars ?? {},
+		events: cachedEvents?.events ?? {},
 		rangeStart: firstVisibleDay,
-		rangeEnd: lastVisiblePlusOne,
-		lastRefresh: today
+		rangeEnd: lastVisibleDay,
+		lastRefresh: now
 	};
-
-	const auth = new G.auth.GoogleAuth({ scopes: [
-		initGcal
-			? "https://www.googleapis.com/auth/calendar"
-			: "https://www.googleapis.com/auth/calendar.readonly",
-		"https://www.googleapis.com/auth/calendar.events.readonly"
-	]});
-	G.options({ auth });
 
 	if (initGcal && !cachedEvents)
 	{
@@ -89,46 +74,55 @@ async function getEventsInternal(): Promise<Event[]>
 		}
 	}
 
-	const calendarsResponse = await Api.calendarList.list();
-	for (const calendar of calendarsResponse.data.items ?? [])
+	if (Object.keys(data.calendars).length !== config.calendars.length)
 	{
-		data.calendars[calendar.id as string] = {
-			id: calendar.id as string,
-			name: calendar.summary as string,
-			bgColor: calendar.backgroundColor as string,
-			fgColor: calendar.foregroundColor as string
-		};
+		const calendarsResponse = await Api.calendarList.list();
+		for (const calendar of calendarsResponse.data.items ?? [])
+		{
+			data.calendars[calendar.id as string] = {
+				id: calendar.id as string,
+				name: calendar.summary as string,
+				bgColor: calendar.backgroundColor as string,
+				fgColor: calendar.foregroundColor as string
+			};
+		}
+	}
 
+	for (const calendarId in data.calendars)
+	{
 		const eventsRes = await Api.events.list({
-			calendarId: calendar.id as string,
+			calendarId,
 			timeMin: firstVisibleDay.toISO(),
-			timeMax: lastVisiblePlusOne.toISO(),
+			timeMax: lastVisibleDay.toISO(),
 			singleEvents: true,
-			orderBy: "startTime"
+			orderBy: "startTime",
+			//updatedMin: cachedEvents?.lastRefresh.toISO()
 		});
 
 		for (const event of eventsRes.data.items ?? [])
 		{
-			data.events.push({
-				calendarId: calendar.id as string,
-				calendar: data.calendars[calendar.id as string],
+			data.events[event.id as string] = {
+				calendarId: calendarId,
+				calendar: data.calendars[calendarId],
 				id: event.id as string,
 				name: event.summary as string,
 				startTime: parseDate(event.start),
-				endTime: parseDate(event.end)
-			});
-
-			if (!data.events[data.events.length - 1].startTime.isValid)
-			{
-				console.error('Error parsing datetime', data.events[data.events.length - 1].startTime.invalidReason);
-			}
+				endTime: parseDate(event.end),
+				lastUpdated: DateTime.fromISO(event.updated as string)
+			};
 		}
 	}
 
-	data.events = data.events.sort((a, b) => a.startTime.toSeconds() - b.startTime.toSeconds());
 	cachedEvents = data;
-	console.log("Cached events:", cachedEvents);
-	return cachedEvents.events;
+}
+
+function getVisibleRange(today: DateTime): [DateTime, DateTime]
+{
+	const firstDay = DateTime.fromObject({ year: today.year, month: today.month, day: 1});
+	const lastDay = firstDay.plus({ days: firstDay.daysInMonth });
+	const firstVisibleDay = firstDay.minus({ days: firstDay.weekday % 7 });
+	const lastVisibleDay = lastDay.plus({ days: 7 - (lastDay.weekday % 7) });
+	return [firstVisibleDay, lastVisibleDay];
 }
 
 function parseDate(dt: calendar_v3.Schema$EventDateTime | undefined): DateTime
@@ -137,7 +131,6 @@ function parseDate(dt: calendar_v3.Schema$EventDateTime | undefined): DateTime
 		return DateTime.fromISO(dt.dateTime);
 	}
 	else if (dt?.date) {
-		console.log(dt?.date);
 		return DateTime.fromFormat(dt?.date, "yyyy-MM-dd");
 	}
 	else {
@@ -147,17 +140,9 @@ function parseDate(dt: calendar_v3.Schema$EventDateTime | undefined): DateTime
 
 export async function getEventsHandler(req: IncomingMessage, res: ServerResponse)
 {
-	try
-	{
-		const events = await getEvents();
-		res.writeHead(200, {'Content-Type': 'application/json'});
-		res.write(JSON.stringify(events));
-		res.end();
-	}
-	catch (ex: any)
-	{
-		console.log(ex);
-		res.writeHead(500, ex);
-		res.end();
-	}
+	const events = Object.values(cachedEvents?.events)
+		.sort((a, b) => a.startTime.toSeconds() - b.startTime.toSeconds());
+	res.writeHead(200, {'Content-Type': 'application/json'});
+	res.write(JSON.stringify(events));
+	res.end();
 }
