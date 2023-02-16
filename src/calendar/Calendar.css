@@ -26,6 +26,11 @@
 .day {
 	width: 14.285%;
 	border: solid grey 1px;
+	border-collapse: collapse;
+}
+
+.day.overflow {
+	background-color: lightgrey;
 }
 
 .dayHeader {
