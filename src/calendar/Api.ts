@@ -20,7 +20,6 @@ export type Event =
 
 let cachedEvents: Event[];
 let getEventsPromise: Promise<Event[]> | null = null;
-let serverSessionId: string;
 
 function getEvents(): Promise<Event[]>
 {
@@ -41,12 +40,6 @@ async function getEventsInternal(): Promise<Event[]>
 	const res = await fetch("/api/calendar/getEvents");
 	if (res.ok)
 	{
-		const liveSession = res.headers.get('X-Server-Session');
-		if (serverSessionId && serverSessionId !== liveSession)
-		{
-			window.location.reload();
-		}
-
 		const data = await res.json();
 
 		for (const e of data)
@@ -74,7 +67,7 @@ export async function getEventsOnDay(day: DateTime): Promise<Event[]>
 	const selectedEvents: Event[] = [];
 	for (const e of cachedEvents)
 	{
-		if (e.startTime >= day && e.startTime < nextDay)
+		if (e.endTime > day && e.startTime < nextDay)
 		{
 			selectedEvents.push(e);
 		}

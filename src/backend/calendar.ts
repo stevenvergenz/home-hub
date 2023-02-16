@@ -1,6 +1,11 @@
-import { google as G } from 'googleapis';
+import { calendar_v3, google as G } from 'googleapis';
 import { DateTime } from 'luxon';
 import { IncomingMessage, ServerResponse } from 'http';
+import { resolve } from 'path';
+
+import CalendarConfig from './config';
+
+const config = require(resolve(__dirname, process.env.CONFIG_PATH || '../config.json')) as CalendarConfig;
 
 type Calendar =
 {
@@ -64,21 +69,21 @@ async function getEventsInternal(): Promise<Event[]>
 	};
 
 	const auth = new G.auth.GoogleAuth({ scopes: [
-		//"https://www.googleapis.com/auth/calendar",
-		"https://www.googleapis.com/auth/calendar.readonly",
+		"https://www.googleapis.com/auth/calendar",
+		//"https://www.googleapis.com/auth/calendar.readonly",
 		"https://www.googleapis.com/auth/calendar.events.readonly"
 	]});
 	G.options({ auth });
 
-	/*const calendars: string[] = [
-		"vergenzs@gmail.com", // steven
-		"rebecca.ly92@gmail.com", // rebecca
-		"642db9c7a8ce992a5c34bbdd1f38b0e33b1769c396c34de98e4868028be20885@group.calendar.google.com" // shared
-	];
-	for (const c of calendars)
+	if (!cachedEvents)
 	{
-		await Api.calendarList.insert({ requestBody: { id: c } });
-	}*/
+		for (let i = 0; i < config.calendars.length; i++)
+		{
+			const res = await Api.calendarList.insert({ requestBody: 
+				{ id: config.calendars[i], colorId: (4 + 5 * i).toString(), selected: true }});
+			console.log(res.status, res.data);
+		}
+	}
 
 	const calendarsResponse = await Api.calendarList.list();
 	for (const calendar of calendarsResponse.data.items ?? [])
@@ -105,15 +110,34 @@ async function getEventsInternal(): Promise<Event[]>
 				calendar: data.calendars[calendar.id as string],
 				id: event.id as string,
 				name: event.summary as string,
-				startTime: DateTime.fromISO(event.start?.dateTime as string),
-				endTime: DateTime.fromISO(event.end?.dateTime as string)
+				startTime: parseDate(event.start),
+				endTime: parseDate(event.end)
 			});
+
+			if (!data.events[data.events.length - 1].startTime.isValid)
+			{
+				console.error('Error parsing datetime', data.events[data.events.length - 1].startTime.invalidReason);
+			}
 		}
 	}
 
 	cachedEvents = data;
 	console.log("Cached events:", cachedEvents);
 	return cachedEvents.events;
+}
+
+function parseDate(dt: calendar_v3.Schema$EventDateTime | undefined): DateTime
+{
+	if (dt?.dateTime) {
+		return DateTime.fromISO(dt.dateTime);
+	}
+	else if (dt?.date) {
+		console.log(dt?.date);
+		return DateTime.fromFormat(dt?.date, "yyyy-MM-dd");
+	}
+	else {
+		return DateTime.invalid("No date given in " + JSON.stringify(dt));
+	}
 }
 
 export async function getEventsHandler(req: IncomingMessage, res: ServerResponse)
