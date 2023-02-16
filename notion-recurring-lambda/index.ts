@@ -80,7 +80,7 @@ async function getLastProcessedTime(notion: Client, databaseId: string): Promise
 
 async function setLastProcessedTime(notion: Client, databaseId: string)
 {
-	const now = DateTime.now();
+	const now = DateTime.local({ zone: "America/Los_Angeles" })
 	console.log(`Setting last processed time: ${now}`);
 
 	const newDescription = (lastLoadedDescription ?? [null]).map(dResponse => {
@@ -90,7 +90,8 @@ async function setLastProcessedTime(notion: Client, databaseId: string)
 			}
 		};
 	});
-	newDescription[newDescription.length - 1].text.content = `Recurring events last processed: ${now.toISO()}`;
+	newDescription[newDescription.length - 1].text.content =
+		`Recurring events last processed: ${now.toISO({ suppressSeconds: true, suppressMilliseconds: true })}`;
 
 	await notion.databases.update({
 		database_id: databaseId,
@@ -145,13 +146,13 @@ async function processRows(notion: Client, databaseId: string, since: DateTime)
 			continue;
 		}
 
-		await updateRow(notion, page.id, recurringProp.rich_text[0].plain_text);
+		await respawnTask(notion, page.id, recurringProp.rich_text[0].plain_text);
 	}
 }
 
-async function updateRow(notion: Client, pageId: string, recurring: string)
+async function respawnTask(notion: Client, pageId: string, recurring: string)
 {
-	const cronString = getCronString(recurring, "0 MIN HOR DOM MON WEK")
+	/*const cronString = getCronString(recurring, "0 MIN HOR DOM MON WEK")
 		.replace(/\?/g, "*")
 		.replace("SUN", "0")
 		.replace("MON", "1")
@@ -160,9 +161,11 @@ async function updateRow(notion: Client, pageId: string, recurring: string)
 		.replace("THU", "4")
 		.replace("FRI", "5")
 		.replace("SAT", "6");
-	console.log(`Parsed "${recurring}" to cron expression ${cronString}`);
-	const interval = cronParser.parseExpression(cronString);
-	const newDueDate = DateTime.fromISO(interval.next().toISOString());
+	console.log(`Parsed "${recurring}" to cron expression ${cronString}`);*/
+	const interval = cronParser.parseExpression(recurring, { tz: "America/Los_Angeles" });
+	const intervalDateStr = interval.next().toISOString();
+	console.log(`DT from CronDate: ${intervalDateStr}`);
+	const newDueDate = DateTime.fromISO(intervalDateStr, { zone: "America/Los_Angeles" });
 	console.log(`Next recurrence on ${newDueDate}`);
 
 	await notion.pages.update({
@@ -170,7 +173,7 @@ async function updateRow(notion: Client, pageId: string, recurring: string)
 		properties: {
 			"Due Date": {
 				date: {
-					start: newDueDate.toISODate()
+					start: newDueDate.toISO({ suppressMilliseconds: true, suppressSeconds: true })
 				}
 			},
 			"Done": {
@@ -179,3 +182,5 @@ async function updateRow(notion: Client, pageId: string, recurring: string)
 		}
 	});
 }
+
+//respawnTask((undefined as unknown) as Client, "", "0 0 8,20 * * *");
