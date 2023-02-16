@@ -1,3 +1,4 @@
 #!/bin/env sh
+npm install --production
 killall chromium-browser
-DISPLAY=:0 chromium-browser --start-fullscreen --start-maximized http://localhost:5000
+DISPLAY=:0 nohup chromium-browser --kiosk --app=http://localhost:5000 &> /dev/null &

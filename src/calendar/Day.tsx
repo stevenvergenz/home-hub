@@ -42,8 +42,7 @@ export default function Day(props: DayProps)
 	}, []);
 
 	return (
-		<td className={`day ${props.isOverflow ? "overflow" : ""}`}
-			title={props.date.toLocaleString()}>
+		<td className={`day ${props.isOverflow ? "overflow" : ""}`}>
 			<div className="dayHeader">
 				<div className="dayLabel">{props.date.day}</div>
 				<div className="tagList">{events.specials}</div>

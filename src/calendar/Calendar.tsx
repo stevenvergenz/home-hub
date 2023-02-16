@@ -33,22 +33,30 @@ function generateDayGrid(): JSX.Element[]
 {
 	const today = DateTime.now();
 	const firstDay = DateTime.fromObject({ year: today.year, month: today.month, day: 1});
+	const lastDay = firstDay.plus({ days: firstDay.daysInMonth });
+	const firstVisibleDay = firstDay.minus({ days: firstDay.weekday % 7 });
+	const lastVisibleDay = lastDay.plus({ days: 6 - (lastDay.weekday % 7) });
 
 	const weeks: JSX.Element[] = [];
-	for (let i = 0; i < 5; i++)
+	let days: JSX.Element[] = [];
+	let date = firstVisibleDay, gridIndex = 0;
+	while (date <= lastVisibleDay)
 	{
-		const days: JSX.Element[] = [];
-		for (let j = 0; j < 7; j++)
+		days.push(
+			<Day key={"day-"+gridIndex} gridIndex={gridIndex} date={date} isOverflow={date.month != today.month} />);
+
+		if (days.length === 7)
 		{
-			const gridIndex = 7 * i + j;
-			const date = firstDay.plus({ days: gridIndex - (firstDay.weekday % 7) })
-			days.push(<Day key={"day-"+(7*i+j)} gridIndex={7 * i + j} date={date} isOverflow={date.month != today.month} />);
+			weeks.push(
+				<tr className="week" key={"week-"+gridIndex%7}>
+					{days}
+				</tr>
+			);
+			days = [];
 		}
 
-		weeks.push(
-			<tr className="week" key={"week-"+i}>
-				{days}
-			</tr>);
+		date = date.plus({ days: 1 });
+		gridIndex++;
 	}
 
 	return weeks;
