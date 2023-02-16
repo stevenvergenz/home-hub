@@ -4,12 +4,13 @@
 	],
 	"compilerOptions": {
 		"outDir": "serverBuild",
-		"target": "es2020",
+		"target": "es2017",
 		"allowJs": true,
 		"skipLibCheck": true,
 		"strict": true,
 		"module": "commonjs",
 		"moduleResolution": "node",
-		"sourceMap": true
+		"sourceMap": true,
+		"esModuleInterop": true
 	},
 }
