@@ -1,3 +1,7 @@
+.calendar {
+	background-color: rgba(211, 211, 211, 0.7);
+}
+
 .calendar > h1 {
 	text-align: center;
 	margin: 5px 0;
@@ -40,7 +44,7 @@
 }
 
 .day.overflow {
-	background-color: lightgrey;
+	background-color: rgba(255, 255, 255, 0.7);
 }
 
 .dayHeader {

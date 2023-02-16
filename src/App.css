@@ -2,6 +2,9 @@
 	height: 100%;
 	display: flex;
 	flex-direction: row;
+
+	background-image: url(/public/wp1918186.webp);
+	background-size: cover;
 }
 
 .App #leftPane {

@@ -58,7 +58,7 @@ function generateDayGrid(events: Event[]): JSX.Element[]
 				gridIndex={gridIndex}
 				date={date}
 				events={events}
-				isOverflow={date.month !== today.month} />);
+				isOverflow={date < today.minus({days: 1})}/>);
 
 		if (days.length === 7)
 		{
