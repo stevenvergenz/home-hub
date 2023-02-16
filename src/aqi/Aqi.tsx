@@ -19,13 +19,15 @@ export default function Aqi(params: AqiParams)
 	const dummy = { ParameterName: "", AQI: -1, Category: { Name: "Unknown", Number: 7 } };
 	const [aqi, setAqi] = React.useState(dummy as ApiResponse | undefined);
 
-	function processResults(res: ApiResponse[])
+	React.useEffect(() =>
 	{
-		setAqi(res.reduce((max, val) => val.AQI > max.AQI ? val : max, dummy));
-	}
+		function processResults(res: ApiResponse[])
+		{
+			setAqi(res.reduce((max, val) => val.AQI > max.AQI ? val : max, dummy));
+		}
 
-	React.useEffect(() => {
 		getCurrentAqi(params.zipCode).then(processResults);
+
 		setInterval(() => {
 			getCurrentAqi(params.zipCode).then(processResults);
 		}, 1000 * 60 * 20);
