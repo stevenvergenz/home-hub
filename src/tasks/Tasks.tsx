@@ -17,7 +17,7 @@ export default function Tasks(params: TasksParams)
 	const [tasks] = useAutoRefreshingState("tasks",
 		[] as ApiTask[],
 		getTasks,
-		[params.today],
+		[],
 		tasksCron);
 
 	const overdue: ApiTask[] = [];

@@ -6,13 +6,14 @@ import Day from './Day';
 import { EventData, getEvents } from './Api';
 import './Calendar.css';
 
-export default function Calendar(params: { today: DateTime }): JSX.Element
+export default function Calendar(): JSX.Element
 {
+	const now = DateTime.now();
 	const [events] = useAutoRefreshingState<EventData | undefined>(
 		"events",
 		undefined,
-		oldList => getEvents(oldList, ...getVisibleRange(params.today)),
-		[params.today],
+		oldList => getEvents(oldList, ...getVisibleRange(now)),
+		[],
 		calendarCron);
 
 	return (
@@ -33,7 +34,7 @@ export default function Calendar(params: { today: DateTime }): JSX.Element
 					</tr>
 				</thead>
 				<tbody>
-					{generateDayGrid(params.today, events)}
+					{generateDayGrid(now, events)}
 				</tbody>
 			</table>
 		</div>

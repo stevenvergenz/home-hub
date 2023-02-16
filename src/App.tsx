@@ -34,7 +34,7 @@ export default function App()
 				<Tasks today={date} />
 			</div>
 			<div id="rightPane">
-				<Calendar today={date} />
+				<Calendar />
 			</div>
 		</div>
 	);

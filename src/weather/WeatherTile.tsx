@@ -65,7 +65,7 @@ function formatIcon(id?: string): string
 	{
 		case "01d": return "wi wi-day-sunny";
 		case "01n": return "wi wi-night-clear";
-		case "02d": return "wi wi-day-overcast";
+		case "02d": return "wi wi-day-sunny-overcast";
 		case "02n": return "wi wi-night-alt-partly-cloudy";
 		case "03d": return "wi wi-day-cloudy";
 		case "03n": return "wi wi-night-alt-cloudy";
