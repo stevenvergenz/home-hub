@@ -9,6 +9,7 @@ import './Calendar.css';
 export default function Calendar(params: { today: DateTime }): JSX.Element
 {
 	const [events] = useAutoRefreshingState<EventData | undefined>(
+		"events",
 		undefined,
 		oldList => getEvents(oldList, ...getVisibleRange(params.today)),
 		[params.today],
@@ -16,11 +17,11 @@ export default function Calendar(params: { today: DateTime }): JSX.Element
 
 	return (
 		<div className="calendar">
+			<div className="legend">
+				Legend: {generateLegend(events)}
+			</div>
 			<table>
 				<thead>
-					<tr className="legend">
-						Legend: {generateLegend(events)}
-					</tr>
 					<tr className="week">
 						<th>Sunday</th>
 						<th>Monday</th>

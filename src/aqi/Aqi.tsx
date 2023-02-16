@@ -1,13 +1,7 @@
 import React from 'react';
-import { Duration } from 'luxon';
 import './Aqi.css';
 import useAutoRefreshingState from '../utils/useAutoRefreshingState';
 import { aqiCron } from '../timings';
-
-type AqiParams = {
-	lat: number;
-	long: number;
-}
 
 /**
  * Full API response details found at https://docs.airnowapi.org/CurrentObservationsByZip/docs
@@ -28,13 +22,14 @@ const dummy: ApiResponse = {
 	DateObserved: "1900-01-01"
 };
 
-export default function Aqi(params: AqiParams)
+export default function Aqi()
 {
 	const [aqi] = useAutoRefreshingState<ApiResponse>(
+		"aqi",
 		dummy,
-		() => getCurrentAqi(params.lat, params.long)
+		() => getCurrentAqi()
 			.then((res: ApiResponse[]) => res.reduce((max, val) => val.AQI > max.AQI ? val : max, dummy)),
-		[params.lat, params.long],
+		[],
 		aqiCron
 	);
 
@@ -50,8 +45,8 @@ export default function Aqi(params: AqiParams)
 	);
 }
 
-export async function getCurrentAqi(lat: number, long: number): Promise<ApiResponse[]>
+export async function getCurrentAqi(): Promise<ApiResponse[]>
 {
-	const res = await fetch(`/api/aqi/getCurrentAqi?lat=${lat}&long=${long}`);
+	const res = await fetch('/api/aqi/getCurrentAqi');
 	return (await res.json()) as ApiResponse[];
 }

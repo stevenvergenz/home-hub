@@ -17,9 +17,9 @@ export type WeatherReading =
 	pop?: number;
 };
 
-export async function getCurrentWeather(lat: string, long: string): Promise<WeatherReading | undefined>
+export async function getCurrentWeather(): Promise<WeatherReading | undefined>
 {
-	const res = await fetch(`/api/weather/current?lat=${lat}&long=${long}`);
+	const res = await fetch('/api/weather/current');
 	if (res.ok) {
 		const resData = await res.json();
 		if (resData.data) {
@@ -34,9 +34,9 @@ export async function getCurrentWeather(lat: string, long: string): Promise<Weat
 	}
 }
 
-export async function getForecastWeather(lat: string, long: string): Promise<WeatherReading[] | undefined>
+export async function getForecastWeather(): Promise<WeatherReading[] | undefined>
 {
-	const res = await fetch(`/api/weather/forecast?lat=${lat}&long=${long}`);
+	const res = await fetch('/api/weather/forecast');
 	if (res.ok) {
 		const resData = await res.json();
 		if (resData.data)

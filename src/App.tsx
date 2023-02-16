@@ -12,11 +12,13 @@ import Weather from './weather';
 export default function App()
 {
 	const [time] = useAutoRefreshingState(
+		null,
 		DateTime.now(),
 		() => Promise.resolve(DateTime.now()),
 		[],
 		timeCron);
 	const [date] = useAutoRefreshingState(
+		null,
 		DateTime.now(),
 		() => Promise.resolve(DateTime.now()),
 		[],
@@ -26,11 +28,11 @@ export default function App()
 		<div className="App">
 			<div id="leftPane">
 				<Clock time={time} />
-				<Aqi lat={47.36} long={-122.16} />
-				<Weather lat="47.36" long="-122.16" />
+				<Aqi />
+				<Weather />
 			</div>
 			<div id="rightPane">
-				<Calendar today={date} />
+				<Calendar today={time} />
 			</div>
 		</div>
 	);

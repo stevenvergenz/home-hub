@@ -9,24 +9,21 @@ import { weatherCron, forecastCron } from '../timings';
 import './Weather.css';
 import 'weather-icons/css/weather-icons.min.css'
 
-type WeatherParams = {
-	lat: string;
-	long: string;
-};
-
-export default function Weather(params: WeatherParams): JSX.Element
+export default function Weather(): JSX.Element
 {
 	const [curWeather] = useAutoRefreshingState<WeatherReading | undefined>(
+		"weather",
 		undefined,
-		() => getCurrentWeather(params.lat, params.long),
-		[params.lat, params.long],
+		() => getCurrentWeather(),
+		[],
 		weatherCron
 	);
 
 	const [forecast] = useAutoRefreshingState<WeatherReading[] | undefined>(
+		"forecast",
 		[],
-		() => getForecastWeather(params.lat, params.long),
-		[params.lat, params.long],
+		() => getForecastWeather(),
+		[],
 		forecastCron
 	);
 
