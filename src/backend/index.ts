@@ -8,6 +8,7 @@ import { getEventsHandler } from './calendar';
 import { getCurrentAqiHandler } from './aqi';
 import { getCurrentWeatherHandler, getForecastWeatherHandler } from './weather';
 import { getConfigHandler } from './config';
+import { getActiveTasksHandler } from './todoist';
 
 process.on('unhandledRejection', err => console.error(err));
 process.on('uncaughtException', ex => console.error(ex));
@@ -19,6 +20,7 @@ app.get('/api/calendar/getEvents', getEventsHandler);
 app.get('/api/aqi/getCurrentAqi', getCurrentAqiHandler);
 app.get('/api/weather/current', getCurrentWeatherHandler);
 app.get('/api/weather/forecast', getForecastWeatherHandler);
+app.get('/api/todoist/tasks', getActiveTasksHandler);
 
 app.use(express.static(resolve(__dirname, '../build')));
 

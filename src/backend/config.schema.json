@@ -1,0 +1,25 @@
+{
+	"$schema": "http://json-schema.org/schema",
+	"type": "object",
+	"properties": {
+		"calendar": {
+			"type": "object",
+			"additionalProperties": {
+				"type": "object",
+				"properties": {
+					"name": { "type": "string" },
+					"colorId": { "anyOf": [{ "type": "number" }, { "type": "null" }] },
+					"color": { "anyOf": [{ "type": "string" }, { "type": "null" }] }
+				}
+			}
+		},
+		"location": {
+			"type": "object",
+			"properties": {
+				"latitude": { "type": "number" },
+				"longitude": { "type": "number" }
+			}
+		},
+		"todoProject": { "type": "string" }
+	}
+}
