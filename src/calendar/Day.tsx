@@ -93,5 +93,5 @@ export function getEventsOnDay(day: DateTime, events: EventData | undefined): Ap
 		}
 	}
 
-	return selectedEvents.sort((a, b) => b.startTime.toSeconds() - a.startTime.toSeconds());
+	return selectedEvents.sort((a, b) => a.startTime.toSeconds() - b.startTime.toSeconds());
 }

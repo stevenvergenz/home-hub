@@ -15,7 +15,6 @@ export default function Calendar(params: { today: DateTime }): JSX.Element
 
 	return (
 		<div className="calendar">
-			<h1>{params.today.monthLong}</h1>
 			<table>
 				<thead>
 					<tr className="week">

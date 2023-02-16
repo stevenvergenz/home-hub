@@ -37,7 +37,7 @@ export default function Aqi(params: AqiParams)
 		Duration.fromObject({ hours: 1 }).toMillis()
 	);
 
-	const categoryClass = (aqi && aqi.AQI <= 15 && aqi.AQI >= 0) ?
+	const categoryClass = (aqi && aqi.AQI < 40 && aqi.AQI >= 0) ?
 		"negligible" :
 		aqi?.Category.Name.toLowerCase().replace(/ /g, "_")
 
