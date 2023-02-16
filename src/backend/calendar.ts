@@ -65,10 +65,21 @@ async function getEventsInternal(): Promise<void>
 	};
 
 	const auth = new G.auth.GoogleAuth({ scopes: [
+		//"https://www.googleapis.com/auth/calendar",
 		"https://www.googleapis.com/auth/calendar.readonly",
 		"https://www.googleapis.com/auth/calendar.events.readonly"
 	]});
 	G.options({ auth });
+
+	/*const calendars: string[] = [
+		"vergenzs@gmail.com", // steven
+		"rebecca.ly92@gmail.com", // rebecca
+		"642db9c7a8ce992a5c34bbdd1f38b0e33b1769c396c34de98e4868028be20885@group.calendar.google.com" // shared
+	];
+	for (const c of calendars)
+	{
+		await Api.calendarList.insert({ requestBody: { id: c } });
+	}*/
 
 	const calendarsResponse = await Api.calendarList.list();
 	for (const calendar of calendarsResponse.data.items ?? [])
@@ -102,6 +113,7 @@ async function getEventsInternal(): Promise<void>
 	}
 
 	cachedEvents = data;
+	console.log("Cached events:", cachedEvents);
 }
 
 async function getEventsOnDay(day: DateTime): Promise<Event[]>

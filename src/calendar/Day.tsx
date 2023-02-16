@@ -13,10 +13,10 @@ type DayProps =
 
 export default function Day(props: DayProps)
 {
-	let events: JSX.Element[] = [];
+	let [events, setEvents] = React.useState([] as JSX.Element[]);
 	React.useEffect(() => {
 		getEventsOnDay(props.date).then(es => {
-			events = es.map(e => <p>{e.name}</p>);
+			setEvents(es.map(e => <p key={e.id}>{e.name}</p>));
 		});
 	}, []);
 
