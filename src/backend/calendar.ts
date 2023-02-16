@@ -76,7 +76,7 @@ async function getEvents(
 		{
 			calendarCache[calendar.id as string] = {
 				id: calendar.id as string,
-				name: calendar.summary as string,
+				name: config.calendars[calendar.id as string].name,
 				bgColor: calendar.backgroundColor as string,
 				fgColor: calendar.foregroundColor as string
 			};

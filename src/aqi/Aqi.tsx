@@ -2,6 +2,7 @@ import React from 'react';
 import { Duration } from 'luxon';
 import './Aqi.css';
 import useAutoRefreshingState from '../utils/useAutoRefreshingState';
+import { aqiCron } from '../timings';
 
 type AqiParams = {
 	lat: number;
@@ -29,12 +30,12 @@ const dummy: ApiResponse = {
 
 export default function Aqi(params: AqiParams)
 {
-	const [aqi, setAqi] = useAutoRefreshingState<ApiResponse>(
+	const [aqi] = useAutoRefreshingState<ApiResponse>(
 		dummy,
 		() => getCurrentAqi(params.lat, params.long)
 			.then((res: ApiResponse[]) => res.reduce((max, val) => val.AQI > max.AQI ? val : max, dummy)),
 		[params.lat, params.long],
-		Duration.fromObject({ hours: 1 }).toMillis()
+		aqiCron
 	);
 
 	const categoryClass = (aqi && aqi.AQI < 40 && aqi.AQI >= 0) ?

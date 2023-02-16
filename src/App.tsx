@@ -1,6 +1,7 @@
 import React from 'react';
 import { DateTime } from 'luxon';
 import './App.css';
+import { timeCron, dateCron } from './timings';
 
 import useAutoRefreshingState from './utils/useAutoRefreshingState';
 import Calendar from './calendar';
@@ -14,13 +15,12 @@ export default function App()
 		DateTime.now(),
 		() => Promise.resolve(DateTime.now()),
 		[],
-		1000 * 60);
+		timeCron);
 	const [date] = useAutoRefreshingState(
 		DateTime.now(),
 		() => Promise.resolve(DateTime.now()),
 		[],
-		1000 * 60 * 60
-	);
+		dateCron);
 
 	return (
 		<div className="App">
