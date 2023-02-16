@@ -1,4 +1,3 @@
-import assert from 'assert';
 import { google as G } from 'googleapis';
 import { DateTime } from 'luxon';
 import { IncomingMessage, ServerResponse } from 'http';
@@ -33,9 +32,9 @@ type CacheData =
 const Api = G.calendar("v3");
 
 let cachedEvents: CacheData;
-let getEventsPromise: Promise<void> | null = null;
+let getEventsPromise: Promise<Event[]> | null = null;
 
-function getEvents(): Promise<void>
+function getEvents(): Promise<Event[]>
 {
 	if (getEventsPromise !== null)
 	{
@@ -49,7 +48,7 @@ function getEvents(): Promise<void>
 	return getEventsPromise;
 }
 
-async function getEventsInternal(): Promise<void>
+async function getEventsInternal(): Promise<Event[]>
 {
 	const today = DateTime.now();
 	const firstDayOfMonth = DateTime.fromObject({ year: today.year, month: today.month, day: 1});
@@ -114,44 +113,14 @@ async function getEventsInternal(): Promise<void>
 
 	cachedEvents = data;
 	console.log("Cached events:", cachedEvents);
+	return cachedEvents.events;
 }
 
-async function getEventsOnDay(day: DateTime): Promise<Event[]>
+export async function getEventsHandler(req: IncomingMessage, res: ServerResponse)
 {
-	if (!cachedEvents)
-	{
-		await getEvents();
-	}
-	
-	assert(day >= cachedEvents.rangeStart && day <= cachedEvents.rangeEnd,
-		`Day ${day} not between ${cachedEvents.rangeStart} and ${cachedEvents.rangeEnd}`);
-	const nextDay = day.plus({days: 1});
-	const selectedEvents: Event[] = [];
-	for (const e of cachedEvents.events)
-	{
-		if (e.startTime >= day && e.startTime < nextDay)
-		{
-			selectedEvents.push(e);
-		}
-	}
-
-	return selectedEvents;
-}
-
-export async function getEventsOnDayHandler(req: IncomingMessage, res: ServerResponse)
-{
-	const url = new URL(req.url as string, `http://${req.headers.host}`);
-	if (!url.searchParams.has("day"))
-	{
-		res.writeHead(400, "Bad request: required argument 'day' missing");
-		res.end();
-		return;
-	}
-
 	try
 	{
-		const day = DateTime.fromISO(url.searchParams.get("day") as string);
-		const events = await getEventsOnDay(day);
+		const events = await getEvents();
 		res.writeHead(200, {'Content-Type': 'application/json'});
 		res.write(JSON.stringify(events));
 		res.end();

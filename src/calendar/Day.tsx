@@ -1,6 +1,7 @@
 import React from 'react';
 import { DateTime } from 'luxon';
 
+import Event from './Event';
 import { getEventsOnDay } from './Api';
 import './Calendar.css';
 
@@ -16,7 +17,7 @@ export default function Day(props: DayProps)
 	let [events, setEvents] = React.useState([] as JSX.Element[]);
 	React.useEffect(() => {
 		getEventsOnDay(props.date).then(es => {
-			setEvents(es.map(e => <p key={e.id}>{e.name}</p>));
+			setEvents(es.map(e => <Event key={e.id} def={e} />));
 		});
 	}, []);
 
