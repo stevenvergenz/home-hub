@@ -28,7 +28,7 @@ export default function Weather(): JSX.Element
 	);
 
 	return (
-		<div className="weather">
+		<div className="weather panel">
 			<WeatherTile big={true} data={curWeather} />
 			<div className="weather-rows">
 				<div className="weather-row">

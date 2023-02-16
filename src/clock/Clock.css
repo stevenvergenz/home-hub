@@ -1,9 +1,5 @@
 .clock {
 	text-align: center;
-	margin: 10px;
-	padding: 10px;
-	background-color: rgba(211, 211, 211, 0.7);
-	border-radius: 10px;
 }
 
 .clock > h1 {

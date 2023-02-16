@@ -1,0 +1,34 @@
+.tasks
+{
+	flex-grow: 1;
+	overflow-y: scroll;
+}
+
+.tasks h3
+{
+	text-align: center;
+	margin: 5px 0;
+}
+
+.tasks ul
+{
+	margin: 3px 0;
+	padding: 0;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+
+.tasks li
+{
+	list-style: none;
+	background-color: #ddd;
+	margin: 3px;
+	padding: 5px;
+	border-radius: 5px;
+}
+
+.tasks li p
+{
+	margin: 0;
+}

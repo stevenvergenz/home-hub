@@ -9,8 +9,20 @@
 
 .App #leftPane {
 	width: 30%;
+	display: flex;
+	flex-direction: column;
+
+	padding: 10px;
+	row-gap: 10px;
 }
 
 .App #rightPane {
 	width: 70%;
+}
+
+.panel
+{
+	padding: 10px;
+	border-radius: 10px;
+	background-color: rgba(211, 211, 211, 0.7);
 }

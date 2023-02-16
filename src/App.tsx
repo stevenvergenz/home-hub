@@ -8,6 +8,7 @@ import Calendar from './calendar';
 import Aqi from './aqi';
 import Clock from './clock';
 import Weather from './weather';
+import Tasks from './tasks';
 
 export default function App()
 {
@@ -19,7 +20,7 @@ export default function App()
 		timeCron);
 	const [date] = useAutoRefreshingState(
 		null,
-		DateTime.now(),
+		DateTime.now().set({ hour: 0, minute: 0, second: 0, millisecond: 0 }),
 		() => Promise.resolve(DateTime.now()),
 		[],
 		dateCron);
@@ -30,6 +31,7 @@ export default function App()
 				<Clock time={time} />
 				<Aqi />
 				<Weather />
+				<Tasks today={time} />
 			</div>
 			<div id="rightPane">
 				<Calendar today={time} />
