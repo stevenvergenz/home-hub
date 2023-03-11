@@ -18,8 +18,9 @@ export default function Task(params: TaskParams): JSX.Element
 
 function formatRelativeTime(time: DateTime | undefined, today: DateTime): string
 {
-	if (time === undefined)
-		return "???";
+	if (time === undefined) {
+		return "";
+	}
 
 	const lowRes = time.hour === 0 && time.minute === 0;
 	const diff = time.diff(today);
@@ -34,6 +35,10 @@ function formatRelativeTime(time: DateTime | undefined, today: DateTime): string
 	{
 		const round = Math.round(value);
 		return value >= 0 ? `in ${round} hours` : `${-round} hours ago`
+	}
+	else if (Math.abs(value = diff.as('days')) < 1)
+	{
+		return value >= 0 ? "tomorrow" : "yesterday";
 	}
 	else if (Math.abs(value = diff.as('days')) < 45)
 	{

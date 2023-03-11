@@ -21,13 +21,11 @@ export default function Tasks(params: TasksParams)
 		tasksCron);
 
 	const overdue: ApiTask[] = [];
-	const today: ApiTask[] = [];
-	const tomorrow: ApiTask[] = [];
+	const thisWeek: ApiTask[] = [];
 	const eventually: ApiTask[] = [];
 
 	const now = DateTime.now();
-	const eod = now.endOf('day');
-	const eot = eod.plus({ days: 1 });
+	const eow = now.endOf('day').plus({days: 6});
 
 	for (const t of tasks)
 	{
@@ -38,18 +36,14 @@ export default function Tasks(params: TasksParams)
 		else if (due.diff(now).as('minutes') < 0) {
 			overdue.push(t);
 		}
-		else if (due.diff(eod).as('minutes') < 0) {
-			today.push(t);
-		}
-		else if (due.diff(eot).as('minutes') < 0) {
-			tomorrow.push(t);
+		else if (due.diff(eow).as('minutes') < 0) {
+			thisWeek.push(t);
 		}
 	}
 
 	return (<div className='tasks panel'>
 		<TaskGroup label="Overdue" tasks={overdue} today={params.today} />
-		<TaskGroup label="Today" tasks={today} today={params.today} />
-		<TaskGroup label="Tomorrow" tasks={tomorrow} today={params.today} />
+		<TaskGroup label="This week" tasks={thisWeek} today={params.today} />
 		<TaskGroup label="Eventually" tasks={eventually} today={params.today} />
 	</div>);
 }
