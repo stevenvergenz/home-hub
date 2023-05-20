@@ -20,6 +20,14 @@
 				"longitude": { "type": "number" }
 			}
 		},
-		"todoProject": { "type": "string" }
+		"todoProject": { "type": "string" },
+		"solar": {
+			"type": "object",
+			"properties": {
+				"gatewayIp": { "type": "string" },
+				"authCookie":  { "type": "string" },
+				"userRecord":  { "type": "string" }
+			}
+		}
 	}
 }
