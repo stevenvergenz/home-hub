@@ -11,6 +11,10 @@ import { getConfigHandler } from './config';
 import { getActiveTasksHandler } from './todoist';
 import { getSolarAggregates } from './solar';
 
+// TODO: FIX THIS SECURITY ISSUE!
+// I couldn't get the CA for my gateway's self-signed cert, so here we are.
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
+
 process.on('unhandledRejection', err => console.error(err));
 process.on('uncaughtException', ex => console.error(ex));
 

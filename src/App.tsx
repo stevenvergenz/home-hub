@@ -9,6 +9,7 @@ import Aqi from './aqi';
 import Clock from './clock';
 import Weather from './weather';
 import Tasks from './tasks';
+import SolarGraph from './weather/SolarGraph';
 
 export default function App()
 {
@@ -25,9 +26,10 @@ export default function App()
 		[],
 		dateCron);
 
-	return (
+	/*return (
 		<div className="App">
 			<div id="leftPane">
+				<SolarGraph />
 				<Clock time={time} />
 				<Aqi />
 				<Weather />
@@ -37,5 +39,10 @@ export default function App()
 				<Calendar />
 			</div>
 		</div>
-	);
+	);*/
+	return (
+		<div className="App">
+			<SolarGraph />
+		</div>
+	)
 }

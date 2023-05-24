@@ -17,9 +17,8 @@ export type Config = {
 	};
 	todoProjects: string[];
 	solar: {
-		gatewayIp: string;
-		authCookie: string;
-		userRecord: string;
+		email: string;
+		password: string;
 	}
 };
 

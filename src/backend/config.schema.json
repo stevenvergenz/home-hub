@@ -24,9 +24,8 @@
 		"solar": {
 			"type": "object",
 			"properties": {
-				"gatewayIp": { "type": "string" },
-				"authCookie":  { "type": "string" },
-				"userRecord":  { "type": "string" }
+				"email": { "type": "string" },
+				"password": { "type": "string" }
 			}
 		}
 	}
