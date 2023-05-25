@@ -4,13 +4,7 @@ import sqlite3 from 'sqlite3';
 import { resolve } from 'path';
 import { config, configLoaded } from './config';
 
-type Sample = {
-	timestamp: number;
-	produced: number;
-	consumed: number;
-};
-
-let headers: HeadersInit;
+let headers: HeadersInit | undefined;
 
 async function authenticate(): Promise<void>
 {
@@ -28,7 +22,6 @@ async function authenticate(): Promise<void>
 	};
 	const res = await fetch(new URL(`https://powerwall/api/login/Basic`),
 		{ method: "POST", body: JSON.stringify(body) });
-	console.log(res.status, await res.text());
 
 	headers = [
 		["Cookie", res.headers.get("Set-Cookie") ?? ''],
@@ -43,14 +36,15 @@ async function pollGateway()
 	const apiRes = await fetch(new URL(`https://powerwall/api/meters/aggregates`), { headers });
 	if (apiRes.status >= 400) {
 		console.error(await apiRes.text());
+		headers = undefined;
 		return;
 	}
 
 	const apiJson = await apiRes.json();
-	const sample: Sample = {
-		timestamp: Math.floor(Date.parse(apiJson.solar.last_communication_time) / 1000),
-		produced: apiJson.solar.energy_exported,
-		consumed: apiJson.load.energy_imported
+	const sample = {
+		$timestamp: Math.floor(Date.parse(apiJson.solar.last_communication_time) / 1000),
+		$produced: apiJson.solar.energy_exported,
+		$consumed: apiJson.load.energy_imported
 	}
 
 	const db = await open({
@@ -59,37 +53,13 @@ async function pollGateway()
 	});
 
 	await db.exec("CREATE TABLE IF NOT EXISTS Samples " +
-		"(timestamp INTEGER, produced DOUBLE, consumed DOUBLE)");
+		"(timestamp INT PRIMARY KEY, produced DOUBLE, consumed DOUBLE);");
 
 	await db.run("INSERT INTO Samples (timestamp, produced, consumed) " +
-		"VALUES (:timestamp, :produced, :consumed))", sample);
+		"VALUES ($timestamp, $produced, $consumed);", sample);
+
+	await db.close();
+
+	console.log(`Solar status: ${sample.$produced} produced, ${sample.$consumed} consumed`);
 }
 setInterval(pollGateway, 60000);
-
-export async function getSolarAggregates(req: E.Request, res: E.Response)
-{
-	try {
-		await authenticate();
-	}
-	catch (e) {
-		res.status(401).send(e);
-		return;
-	}
-
-	try {
-		const apiRes = await fetch(new URL(`https://powerwall/api/meters/aggregates`), { headers });
-		if (apiRes.status >= 400) {
-			res.status(500).send("Error from gateway: " + await apiRes.text());
-			return;
-		}
-
-		const apiJson = await apiRes.json();
-		res.setHeader("Content-Type", "application/json").send({
-			energyProduced: apiJson.solar.energy_exported,
-			energyConsumed: apiJson.load.energy_imported
-		});
-	}
-	catch (e) {
-		res.status(500).send(e);
-	}
-}
