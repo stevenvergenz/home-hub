@@ -2,6 +2,7 @@ import * as E from 'express';
 import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import { resolve } from 'path';
+import { DateTime } from 'luxon';
 import { config, configLoaded } from './config';
 
 let headers: HeadersInit | undefined;
@@ -95,60 +96,46 @@ async function pollGateway()
 
 	console.log(`Solar status: ${sample.$produced} produced, ${sample.$consumed} consumed`);
 }
-//setInterval(pollGateway, 60000);
+setInterval(pollGateway, 60000);
 
 export async function getSolarAggregates(req: E.Request, res: E.Response)
 {
-	//const db = await DB.acquire();
+	const db = await DB.acquire();
 	const queryVars = {
-		$window: 60*60*24, // 24 hours in seconds
-		$resolution: 96, // divide $window into 96 slices of 15 minutes each
-		$divider: 60*60*5, // 5am in seconds
+		$resolution: 15*60,
+		$divider: DateTime.now().set({ hour: 5, minute: 0, second: 0}).toUnixInteger()
 	};
 
-	/*db.get(
-		"WITH RecentSamples AS (" +
-			"SELECT timestamp, produced, consumed " +
-			"FROM Samples " +
-			"WHERE timestamp > unixepoch() - $window) " + 
-		"SELECT timestamp - (SELECT min(timestamp) from RecentSamples), produced, consumed " + 
-		"FROM RecentSamples;", vars);*/
-	/*db.get(
-		"SELECT (timestamp - unixepoch()/$window*$window) / 60 as slot, " +
-			"produced, consumed " +
-		"FROM Samples " +
-		"WHERE timestamp > unixepoch() - $window",
-		queryVars
-	)*/
+	const result = await db.all(`
+		WITH TodaySamples AS (
+			SELECT timestamp, produced, consumed,
+				(timestamp - $divider) / $resolution AS slot
+			FROM Samples
+			WHERE timestamp >= $divider AND timestamp < $divider + 24*60*60
+			GROUP BY slot
+		), YesterdaySamples AS (
+			SELECT timestamp, produced, consumed,
+				(timestamp - $divider + 24*60*60) / $resolution AS slot
+			FROM Samples
+			WHERE timestamp >= $divider - 24*60*60 AND timestamp < $divider
+			GROUP BY slot
+		)
+		SELECT slot, timestamp,
+			produced - (SELECT MIN(produced) FROM TodaySamples) AS produced,
+			consumed - (SELECT MIN(consumed) FROM TodaySamples) AS consumed
+		FROM TodaySamples
+		UNION
+		SELECT slot, timestamp,
+			produced - (SELECT MIN(produced) FROM YesterdaySamples) AS produced,
+			consumed - (SELECT MIN(consumed) FROM YesterdaySamples) AS consumed
+		FROM YesterdaySamples
+		WHERE timestamp > (SELECT MAX(timestamp) - 24*60*60 FROM TodaySamples)
+		ORDER BY slot;`,
+		queryVars);
+	/*
+		*/
 
-	//await DB.release(db);
-	res.send();
-}
-
-function getData(resolution: number, divider: number)
-{
-	const data: {timestamp: number, produced: number, consumed: number}[] = [];
-
-	const now = Date.now();
-	const window = 60*60*24;
-	const startTime = Math.floor(now / window) * window + divider;
-
-	return data.filter(s => s.timestamp >= startTime)
-		.map((s, i, arr) => {
-			return {
-				slot: Math.floor((s.timestamp - startTime) / resolution),
-				produced: s.produced - arr[0].produced,
-				consumed: s.consumed - arr[0].consumed
-			};
-		})
-		.concat(
-			data.filter(s => s.timestamp >= startTime - window && s.timestamp < startTime)
-				.map((s, i, arr) => {
-					return {
-						slot: Math.floor((s.timestamp + window - startTime) / resolution),
-						produced: s.produced - arr[0].produced,
-						consumed: s.consumed - arr[0].consumed
-					};
-				})
-		);
+	await DB.release(db);
+	res.json(result.map(x => { return {...x, timestamp: DateTime.fromSeconds(x.timestamp)}}));
+	//res.send(result.map(x => `${DateTime.fromSeconds(x.time)},${x.produced},${x.consumed}`).join('<br/>'));
 }

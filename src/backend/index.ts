@@ -9,7 +9,7 @@ import { getCurrentAqiHandler } from './aqi';
 import { getCurrentWeatherHandler, getForecastWeatherHandler } from './weather';
 import { getConfigHandler } from './config';
 import { getActiveTasksHandler } from './todoist';
-import './solar';
+import { getSolarAggregates } from './solar';
 
 // TODO: FIX THIS SECURITY ISSUE!
 // I couldn't get the CA for my gateway's self-signed cert, so here we are.
@@ -26,6 +26,7 @@ app.get('/api/aqi/getCurrentAqi', getCurrentAqiHandler);
 app.get('/api/weather/current', getCurrentWeatherHandler);
 app.get('/api/weather/forecast', getForecastWeatherHandler);
 app.get('/api/todoist/tasks', getActiveTasksHandler);
+app.get('/api/solar/history', getSolarAggregates);
 
 app.use(express.static(resolve(__dirname, '../build')));
 
