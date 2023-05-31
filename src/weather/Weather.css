@@ -64,3 +64,8 @@
 {
 	color: darkblue;
 }
+
+#solarGraph {
+	width: 20%;
+	height: 150px;
+}
