@@ -8,6 +8,7 @@ import { weatherCron, forecastCron } from '../timings';
 
 import './Weather.css';
 import 'weather-icons/css/weather-icons.min.css'
+import SolarGraph from './SolarGraph';
 
 export default function Weather(): JSX.Element
 {
@@ -27,7 +28,7 @@ export default function Weather(): JSX.Element
 		forecastCron
 	);
 
-	return (
+	/*return (
 		<div className="weather panel">
 			<WeatherTile big={true} data={curWeather} />
 			<div className="weather-rows">
@@ -44,7 +45,12 @@ export default function Weather(): JSX.Element
 				</div>
 			</div>
 		</div>
-	);
+	);*/
+	return (
+		<div className="weather panel">
+			<SolarGraph />
+		</div>
+	)
 }
 
 function getAggregateForecast(readings: WeatherReading[] | undefined, daysOut: number): WeatherReading | undefined

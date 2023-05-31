@@ -96,46 +96,47 @@ async function pollGateway()
 
 	console.log(`Solar status: ${sample.$produced} produced, ${sample.$consumed} consumed`);
 }
-setInterval(pollGateway, 60000);
+//setInterval(pollGateway, 60000);
 
 export async function getSolarAggregates(req: E.Request, res: E.Response)
 {
 	const db = await DB.acquire();
 	const queryVars = {
 		$resolution: 15*60,
-		$divider: DateTime.now().set({ hour: 5, minute: 0, second: 0}).toUnixInteger()
+		//$divider: DateTime.now().set({ hour: 5, minute: 0, second: 0}).toUnixInteger()
+		$divider: DateTime.fromObject({year: 2023, month: 5, day: 28}).toUnixInteger()
 	};
 
 	const result = await db.all(`
 		WITH TodaySamples AS (
 			SELECT timestamp, produced, consumed,
-				(timestamp - $divider) / $resolution AS slot
+				(timestamp - $divider) / $resolution AS key
 			FROM Samples
 			WHERE timestamp >= $divider AND timestamp < $divider + 24*60*60
-			GROUP BY slot
+			GROUP BY key
 		), YesterdaySamples AS (
 			SELECT timestamp, produced, consumed,
-				(timestamp - $divider + 24*60*60) / $resolution AS slot
+				(timestamp - $divider + 24*60*60) / $resolution AS key
 			FROM Samples
 			WHERE timestamp >= $divider - 24*60*60 AND timestamp < $divider
-			GROUP BY slot
+			GROUP BY key
 		)
-		SELECT slot, timestamp,
+		SELECT key, timestamp,
 			produced - (SELECT MIN(produced) FROM TodaySamples) AS produced,
 			consumed - (SELECT MIN(consumed) FROM TodaySamples) AS consumed
 		FROM TodaySamples
 		UNION
-		SELECT slot, timestamp,
+		SELECT key, timestamp,
 			produced - (SELECT MIN(produced) FROM YesterdaySamples) AS produced,
 			consumed - (SELECT MIN(consumed) FROM YesterdaySamples) AS consumed
 		FROM YesterdaySamples
 		WHERE timestamp > (SELECT MAX(timestamp) - 24*60*60 FROM TodaySamples)
-		ORDER BY slot;`,
+		ORDER BY key;`,
 		queryVars);
 	/*
 		*/
 
 	await DB.release(db);
-	res.json(result.map(x => { return {...x, timestamp: DateTime.fromSeconds(x.timestamp)}}));
+	res.json(result); //.map(x => { return {...x, timestamp: DateTime.fromSeconds(x.timestamp)}}));
 	//res.send(result.map(x => `${DateTime.fromSeconds(x.time)},${x.produced},${x.consumed}`).join('<br/>'));
 }
