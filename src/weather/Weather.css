@@ -26,7 +26,7 @@
 .weather-tile.big
 {
 	font-size: 3em;
-	margin: 0 20px;
+	/*margin: 0 20px;*/
 
 	display: flex;
 	flex-direction: column;
@@ -67,5 +67,5 @@
 
 #solarGraph {
 	width: 20%;
-	height: 150px;
+	height: 98%;
 }

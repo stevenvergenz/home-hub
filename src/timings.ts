@@ -13,4 +13,4 @@ export const forecastCron = "0 3 5-23/3 * * *";
 /** Every three hours from 5am to 11pm on the 4's */
 export const tasksCron = "0 4 6-23 * * *";
 /** Every fifteen minutes */
-export const solarCron = "*/15 * * * * *";
+export const solarCron = "0 * * * * *";

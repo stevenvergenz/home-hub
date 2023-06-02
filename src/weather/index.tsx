@@ -28,7 +28,7 @@ export default function Weather(): JSX.Element
 		forecastCron
 	);
 
-	/*return (
+	return (
 		<div className="weather panel">
 			<WeatherTile big={true} data={curWeather} />
 			<div className="weather-rows">
@@ -44,13 +44,9 @@ export default function Weather(): JSX.Element
 					<WeatherTile data={getAggregateForecast(forecast, 3)} />
 				</div>
 			</div>
+			<SolarGraph id="solarGraph" />
 		</div>
-	);*/
-	return (
-		<div className="weather panel">
-			<SolarGraph />
-		</div>
-	)
+	);
 }
 
 function getAggregateForecast(readings: WeatherReading[] | undefined, daysOut: number): WeatherReading | undefined

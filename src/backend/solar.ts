@@ -103,8 +103,10 @@ export async function getSolarAggregates(req: E.Request, res: E.Response)
 	const db = await DB.acquire();
 	const queryVars = {
 		$resolution: 15*60,
-		//$divider: DateTime.now().set({ hour: 5, minute: 0, second: 0}).toUnixInteger()
-		$divider: DateTime.fromObject({year: 2023, month: 5, day: 28}).toUnixInteger()
+		//$divider: DateTime.now().set({ hour: 5, minute: 0, second: 0}).toUnixInteger(),
+		//$now: DateTime.now().toUnixInteger(),
+		$divider: DateTime.local(2023, 5, 28, 0, 0, 0, 0).toUnixInteger(),
+		$now: DateTime.local(2023, 5, 28, 13, 0, 0, 0).toUnixInteger(),
 	};
 
 	const result = await db.all(`
@@ -112,7 +114,7 @@ export async function getSolarAggregates(req: E.Request, res: E.Response)
 			SELECT timestamp, produced, consumed,
 				(timestamp - $divider) / $resolution AS key
 			FROM Samples
-			WHERE timestamp >= $divider AND timestamp < $divider + 24*60*60
+			WHERE timestamp >= $divider AND timestamp < $now
 			GROUP BY key
 		), YesterdaySamples AS (
 			SELECT timestamp, produced, consumed,
