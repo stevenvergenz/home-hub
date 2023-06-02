@@ -1,8 +1,12 @@
 import { DateTime } from 'luxon';
-import { svg } from 'd3';
+import { useEffect } from 'react';
 import useAutoRefreshingState from '../utils/useAutoRefreshingState';
 import { solarCron } from '../timings';
-import { LineChart } from './LineChart';
+import * as d3 from 'd3';
+
+export type SolarGraphParams = {
+	id: string;
+};
 
 type ApiSolar = {
 	key: number;
@@ -11,26 +15,54 @@ type ApiSolar = {
 	consumed: number;
 };
 
-export default function SolarGraph()
+type LineChartParams = {
+	id: string;
+	data: any[];
+	xField: string;
+	y1Field: string;
+	y2Field: string;
+};
+
+const graphId = "solarGraph";
+
+export default function SolarGraph(params: SolarGraphParams)
 {
-	const [solarData] = useAutoRefreshingState<ApiSolar[]>(
+	useAutoRefreshingState<ApiSolar[]>(
 		"solarData",
 		[],
-		updateSolarData, 
-		[], 
+		() => updateSolarData(params.id), 
+		[params.id], 
 		solarCron);
 
-		return <LineChart id="solarGraph" data={solarData} xField='timestamp' y1Field='produced' y2Field='consumed' />;
+	return <div id={params.id} />;
 }
 
-async function updateSolarData(): Promise<ApiSolar[]>
+async function updateSolarData(id: string): Promise<ApiSolar[]>
 {
 	const res = await fetch('/api/solar/history');
 	const data = (await res.json()) as ApiSolar[];
+	renderSvg({ id: graphId, data, xField: "timestamp", y1Field: "produced", y2Field: "consumed" });
 	return data;
 }
 
-function getTimeIndex() {
-	const now = DateTime.now();
-	return now.hour * 4 + Math.floor(now.minute / 15);
+function renderSvg(params: LineChartParams)
+{
+	const container = d3.select<HTMLDivElement, void>('#' + params.id);
+	const node = container.node();
+	if (!container || !node) return;
+
+	const [svgWidth, svgHeight] = [node.clientWidth, node.clientHeight];
+	let svg = container.selectChild<SVGSVGElement>("svg");
+	if (svg.size() === 0) {
+		svg = container.append("svg");
+	}
+
+	svg
+		.attr("width", svgWidth)
+		.attr("height", svgHeight)
+		.append("g")
+			.append("rect")
+				.attr("width", svgWidth)
+				.attr("height", svgHeight)
+				.style("fill", "#fff");
 }
