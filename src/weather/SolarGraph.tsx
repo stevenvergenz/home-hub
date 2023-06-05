@@ -20,6 +20,8 @@ type LineChartParams = {
 	data: any[];
 };
 
+type Point = { x: number; y: number; };
+
 export default function SolarGraph(params: SolarGraphParams)
 {
 	useAutoRefreshingState<ApiSolar[]>(
@@ -40,6 +42,10 @@ async function updateSolarData(id: string): Promise<ApiSolar[]>
 	return data;
 }
 
+const timeLabels = [
+	"\u{1f552}", "\u{1f555}", "\u{1f558}", "\u{1f55b}", "\u{1f552}", "\u{1f555}", "\u{1f558}"];
+const powerLabels = ["1k", "2k", "3k", "4k", "5k", "6k", "7k", "8k"];
+
 function renderSvg(params: LineChartParams)
 {
 	const container = d3.select<HTMLDivElement, void>('#' + params.id);
@@ -53,13 +59,13 @@ function renderSvg(params: LineChartParams)
 		.attr("width", svgWidth)
 		.attr("height", svgHeight);
 
-	const xScale = d3.scaleLinear([0, 95], [svgHeight-1, 1]);
+	const xScale = d3.scaleLinear([0, 95], [svgHeight, 0]);
 	const yScale = d3.scaleLinear(
 		[0, d3.max(params.data, s => (s.produced > s.consumed ? s.produced : s.consumed))],
-		[svgWidth - 1, 1]);
+		[svgWidth, 0]);
 
-	drawGrid(svg, yScale, "yScale", "y", 0, 80000, 10000);
-	drawGrid(svg, xScale, "xScale", "x", 0, 95, 12);
+	drawGrid(svg, yScale, "yScale", "y", 0, 80000, 10000, tick => powerLabels[Math.floor(tick/10000)-1]);
+	drawGrid(svg, xScale, "xScale", "x", 0, 95, 12, tick => timeLabels[Math.round(tick / 12) - 1]);
 
 	// produced
 	const producedLine = d3.line<ApiSolar>()
@@ -115,31 +121,35 @@ function getOrCreate<T extends SVGElement>(
 function drawGrid(
 	svg: d3.Selection<SVGSVGElement, void, HTMLElement, any>,
 	scale: d3.ScaleLinear<number, number, never>,
-	id: string, axis: 'x' | 'y', start: number, end: number, step: number)
+	id: string, axis: 'x' | 'y', start: number, end: number, step: number, labels?: (value: number) => string)
 {
 	const g = getOrCreate<SVGGElement>(svg, `g#${id}`);
 
 	const width = parseFloat(svg.attr("width")),
 		height = parseFloat(svg.attr("height"));
 
-
 	for (let i = start; i <= end; i += step) {
-
-		let x1: number, y1: number, x2: number, y2: number;
+		let start: Point, end: Point, labelOffset: Point;
 		if (axis === 'y') {
-			x1 = scale(i);
-			y1 = 0;
-			x2 = x1;
-			y2 = height;
+			start = { x: scale(i), y: height };
+			end = { x: start.x, y: 0 };
+			labelOffset = { x: 9, y: -1 };
 		}
 		else {
-			x1 = 0;
-			y1 = scale(i);
-			x2 = width;
-			y2 = scale(i);
+			start = { x: 0, y: scale(i) };
+			end = { x: width, y: start.y };
+			labelOffset = { x: 8, y: 5 };
 		}
 
 		getOrCreate(g, `line#${axis}${i}`, e => e.attr("stroke", "grey").attr("stroke-width", 1))
-			.attr("x1", x1).attr("y1", y1).attr("x2", x2).attr("y2", y2);
+			.attr("x1", start.x).attr("y1", start.y).attr("x2", end.x).attr("y2", end.y);
+
+		if (labels) {
+			getOrCreate<SVGGElement>(g, `text#label${axis}${i}`,
+				e => e.attr("fill", "grey").attr("text-anchor", "middle").attr("font-size", "0.9em"))
+				.attr("x", start.x + labelOffset.x)
+				.attr("y", start.y + labelOffset.y)
+				.text(labels(i));
+		}
 	}
 }
