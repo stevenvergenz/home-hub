@@ -47,11 +47,8 @@ function renderSvg(params: LineChartParams)
 	if (!container || !node) return;
 
 	const [svgWidth, svgHeight] = [node.clientWidth, node.clientHeight];
-	let svg = container.selectChild<SVGSVGElement>("svg");
-	if (svg.size() === 0) {
-		svg = container.append("svg");
-	}
-
+	const svg = getOrCreate<SVGSVGElement>(container, "svg#solarGraphSvg");
+	
 	svg
 		.attr("width", svgWidth)
 		.attr("height", svgHeight);
@@ -61,65 +58,88 @@ function renderSvg(params: LineChartParams)
 		[0, d3.max(params.data, s => (s.produced > s.consumed ? s.produced : s.consumed))],
 		[svgWidth - 1, 1]);
 
+	drawGrid(svg, yScale, "yScale", "y", 0, 80000, 10000);
+	drawGrid(svg, xScale, "xScale", "x", 0, 95, 12);
+
 	// produced
 	const producedLine = d3.line<ApiSolar>()
 		.y(s => xScale(s.key))
 		.x(s => yScale(s.produced));
 
-	let producedStroke = svg.selectChild<SVGPathElement>("path#producedStroke");
-	if (producedStroke.size() === 0) {
-		producedStroke = svg.append("path")
-			.attr("id", "producedStroke")
-			.attr("fill", "none")
-			.attr("stroke", "gold")
-			.attr("stroke-width", 1.5);
-	}
+	getOrCreate<SVGPathElement>(svg, "path#producedStroke",
+		e => e.attr("fill", "none").attr("stroke", "gold").attr("stroke-width", 1.5))
+		.attr("d", producedLine(params.data));
 
-	let producedFill = svg.selectChild<SVGPathElement>("path#producedFill");
-	if (producedFill.size() === 0) {
-		producedFill = svg.append("path")
-			.attr("id", "producedFill")
-			.attr("fill", "rgba(255, 255, 0, 0.2)")
-			.attr("stroke", "none");
-	}
-
-	producedStroke.attr("d", producedLine(params.data));
-	producedFill.attr("d", producedLine(params.data.concat([{key: 95, timestamp: 0, produced: 0, consumed: 0}])));
+	getOrCreate<SVGPathElement>(svg, "path#producedFill",
+		e => e.attr("fill", "rgba(255, 255, 0, 0.2)").attr("stroke", "none"))
+		.attr("d", producedLine(params.data) + `L${svgWidth},0`);
 
 	// consumed
 	const consumedLine = d3.line<ApiSolar>()
 		.y(s => xScale(s.key))
 		.x(s => yScale(s.consumed));
 
-	let consumedStroke = svg.selectChild<SVGPathElement>("path#consumedStroke");
-	if (consumedStroke.size() === 0) {
-		consumedStroke = svg.append("path")
-			.attr("id", "consumedStroke")
-			.attr("fill", "none")
-			.attr("stroke", "blue")
-			.attr("stroke-width", 1.5);
-	}
+	getOrCreate<SVGPathElement>(svg, "path#consumedStroke",
+		e => e.attr("fill", "none").attr("stroke", "blue").attr("stroke-width", 1.5))
+		.attr("d", consumedLine(params.data));
 
-	let consumedFill = svg.selectChild<SVGPathElement>("path#consumedFill");
-	if (consumedFill.size() === 0) {
-		consumedFill = svg.append("path")
-			.attr("id", "consumedFill")
-			.attr("fill", "rgba(0, 0, 255, 0.2)")
-			.attr("stroke", "none");
-	}
-
-	consumedStroke.attr("d", consumedLine(params.data));
-	consumedFill.attr("d", consumedLine(params.data.concat([{key: 95, timestamp: 0, produced: 0, consumed: 0}])));
+	getOrCreate<SVGPathElement>(svg, "path#consumedFill",
+		e => e.attr("fill", "rgba(0, 0, 255, 0.2)").attr("stroke", "none"))
+		.attr("d", consumedLine(params.data) + `L${svgWidth},0`);
 
 	// now line
 	const split = xScale(params.data.findIndex((_, i, arr) => arr[i].timestamp > arr[i+1].timestamp));
-	let splitStroke = svg.selectChild<SVGPathElement>("path#splitStroke");
-	if (splitStroke.size() === 0) {
-		splitStroke = svg.append("path")
-			.attr("id", "splitStroke")
-			.attr("fill", "none")
-			.attr("stroke", "grey")
-			.attr("stroke-width", 3);
+	getOrCreate<SVGRectElement>(svg, "rect#splitFill",
+		e => e.attr("fill", "rgba(127,127,127,0.5)").attr("stroke", "none").attr("x", 0).attr("y", 0).attr("width", svgWidth))
+		.attr("height", split);
+	getOrCreate<SVGLineElement>(svg, "line#splitStroke",
+		e => e.attr("fill", "none").attr("stroke", "white").attr("stroke-width", 3))
+		.attr("x1", 0).attr("y1", split).attr("x2", svgWidth).attr("y2", split);
+}
+
+function getOrCreate<T extends SVGElement>(
+	svg: d3.Selection<any, void, HTMLElement, any>,
+	selector: string, init?: (e: d3.Selection<T, void, HTMLElement, any>) => void)
+{
+	let e = svg.selectChild<T>(selector);
+	if (e.size() === 0) {
+		const [type, id] = selector.split('#');
+		e = svg.append<T>(type).attr('id', id);
+		if (init) {
+			init(e);
+		}
 	}
-	splitStroke.attr("d", `M${svgWidth},${split}L0,${split}`);
+	return e;
+}
+
+function drawGrid(
+	svg: d3.Selection<SVGSVGElement, void, HTMLElement, any>,
+	scale: d3.ScaleLinear<number, number, never>,
+	id: string, axis: 'x' | 'y', start: number, end: number, step: number)
+{
+	const g = getOrCreate<SVGGElement>(svg, `g#${id}`);
+
+	const width = parseFloat(svg.attr("width")),
+		height = parseFloat(svg.attr("height"));
+
+
+	for (let i = start; i <= end; i += step) {
+
+		let x1: number, y1: number, x2: number, y2: number;
+		if (axis === 'y') {
+			x1 = scale(i);
+			y1 = 0;
+			x2 = x1;
+			y2 = height;
+		}
+		else {
+			x1 = 0;
+			y1 = scale(i);
+			x2 = width;
+			y2 = scale(i);
+		}
+
+		getOrCreate(g, `line#${axis}${i}`, e => e.attr("stroke", "grey").attr("stroke-width", 1))
+			.attr("x1", x1).attr("y1", y1).attr("x2", x2).attr("y2", y2);
+	}
 }

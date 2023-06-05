@@ -96,17 +96,17 @@ async function pollGateway()
 
 	console.log(`Solar status: ${sample.$produced} produced, ${sample.$consumed} consumed`);
 }
-//setInterval(pollGateway, 60000);
+setInterval(pollGateway, 60000);
 
 export async function getSolarAggregates(req: E.Request, res: E.Response)
 {
 	const db = await DB.acquire();
 	const queryVars = {
 		$resolution: 15*60,
-		//$divider: DateTime.now().set({ hour: 5, minute: 0, second: 0}).toUnixInteger(),
-		//$now: DateTime.now().toUnixInteger(),
-		$divider: DateTime.local(2023, 5, 28, 0, 0, 0, 0).toUnixInteger(),
-		$now: DateTime.local(2023, 5, 28, 13, 0, 0, 0).toUnixInteger(),
+		$divider: DateTime.now().set({hour: 0, minute: 0, second: 0, millisecond: 0}).toUnixInteger(),
+		$now: DateTime.now().toUnixInteger(),
+		//$divider: DateTime.local(2023, 5, 28, 0, 0, 0, 0).toUnixInteger(),
+		//$now: DateTime.local(2023, 5, 28, 13, 0, 0, 0).toUnixInteger(),
 	};
 
 	const result = await db.all(`
@@ -135,10 +135,7 @@ export async function getSolarAggregates(req: E.Request, res: E.Response)
 		WHERE timestamp > (SELECT MAX(timestamp) - 24*60*60 FROM TodaySamples)
 		ORDER BY key;`,
 		queryVars);
-	/*
-		*/
 
 	await DB.release(db);
-	res.json(result); //.map(x => { return {...x, timestamp: DateTime.fromSeconds(x.timestamp)}}));
-	//res.send(result.map(x => `${DateTime.fromSeconds(x.time)},${x.produced},${x.consumed}`).join('<br/>'));
+	res.json(result);
 }
