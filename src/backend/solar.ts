@@ -96,17 +96,21 @@ async function pollGateway()
 
 	console.log(`Solar status: ${sample.$produced} produced, ${sample.$consumed} consumed`);
 }
-setInterval(pollGateway, 60000);
+if (process.env.DEVELOPMENT) {
+	setInterval(pollGateway, 60000);
+}
 
 export async function getSolarAggregates(req: E.Request, res: E.Response)
 {
 	const db = await DB.acquire();
 	const queryVars = {
 		$resolution: 15*60,
-		$divider: DateTime.now().set({hour: 0, minute: 0, second: 0, millisecond: 0}).toUnixInteger(),
-		$now: DateTime.now().toUnixInteger(),
-		//$divider: DateTime.local(2023, 5, 28, 0, 0, 0, 0).toUnixInteger(),
-		//$now: DateTime.local(2023, 5, 28, 13, 0, 0, 0).toUnixInteger(),
+		$divider: process.env.DEVELOPMENT ?
+			DateTime.local(2023, 5, 28, 0, 0, 0, 0).toUnixInteger() :
+			DateTime.now().set({hour: 0, minute: 0, second: 0, millisecond: 0}).toUnixInteger(),
+		$now: process.env.DEVELOPMENT ?
+			DateTime.local(2023, 5, 28, 13, 0, 0, 0).toUnixInteger() :
+			DateTime.now().toUnixInteger(),
 	};
 
 	const result = await db.all(`
