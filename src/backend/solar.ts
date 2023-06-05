@@ -103,10 +103,10 @@ export async function getSolarAggregates(req: E.Request, res: E.Response)
 	const db = await DB.acquire();
 	const queryVars = {
 		$resolution: 15*60,
-		//$divider: DateTime.now().set({hour: 0, minute: 0, second: 0, millisecond: 0}).toUnixInteger(),
-		//$now: DateTime.now().toUnixInteger(),
-		$divider: DateTime.local(2023, 5, 28, 0, 0, 0, 0).toUnixInteger(),
-		$now: DateTime.local(2023, 5, 28, 13, 0, 0, 0).toUnixInteger(),
+		$divider: DateTime.now().set({hour: 0, minute: 0, second: 0, millisecond: 0}).toUnixInteger(),
+		$now: DateTime.now().toUnixInteger(),
+		//$divider: DateTime.local(2023, 5, 28, 0, 0, 0, 0).toUnixInteger(),
+		//$now: DateTime.local(2023, 5, 28, 13, 0, 0, 0).toUnixInteger(),
 	};
 
 	const result = await db.all(`
