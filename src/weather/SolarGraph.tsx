@@ -95,9 +95,10 @@ function renderSvg(params: LineChartParams)
 		.attr("d", consumedLine(params.data) + `L${svgWidth},0`);
 
 	// now line
-	const split = xScale(params.data.findIndex((_, i, arr) => arr[i].timestamp > arr[i+1].timestamp));
+	const split = xScale(params.data.findIndex((_, i, arr) => arr[i].timestamp < (arr[i-1]?.timestamp ?? 0)));
 	getOrCreate<SVGRectElement>(svg, "rect#splitFill",
-		e => e.attr("fill", "rgba(127,127,127,0.5)").attr("stroke", "none").attr("x", 0).attr("y", 0).attr("width", svgWidth))
+		e => e.attr("fill", "rgba(127,127,127,0.5)").attr("stroke", "none")
+			.attr("x", 0).attr("y", 0).attr("width", svgWidth))
 		.attr("height", split);
 	getOrCreate<SVGLineElement>(svg, "line#splitStroke",
 		e => e.attr("fill", "none").attr("stroke", "white").attr("stroke-width", 3))

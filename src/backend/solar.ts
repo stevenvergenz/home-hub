@@ -96,7 +96,7 @@ async function pollGateway()
 
 	console.log(`Solar status: ${sample.$produced} produced, ${sample.$consumed} consumed`);
 }
-if (process.env.DEVELOPMENT) {
+if (!process.env.DEVELOPMENT) {
 	setInterval(pollGateway, 60000);
 }
 
